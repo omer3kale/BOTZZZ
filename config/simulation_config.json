@@ -1,0 +1,9 @@
+{
+  "num_creators": 5,
+  "num_real_users": 100,
+  "num_bots": 20,
+  "num_content": 10,
+  "simulation_steps": 50,
+  "real_like_prob": 0.05,
+  "bot_like_prob": 0.5
+}
