@@ -1,0 +1,40 @@
+# Large simulation data files
+data/*.json
+*.json
+enhanced_youtube_simulation_*.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Virtual environment
+venv/
+env/
+.venv/
+.env/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Database files
+*.db
+*.sqlite3
+
+# Large data files
+data/
+results/*.png
