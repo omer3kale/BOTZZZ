@@ -1,0 +1,18 @@
+[
+  {
+    "timestamp": "2025-08-02T15:18:53.584808",
+    "event_type": "generic_comment_detected",
+    "bot_id": "bot_view_farm_cc8622d5",
+    "video_id": "yt_8f0bce1c2b7",
+    "comment": "First!",
+    "risk_score": 0.7065928170756771
+  },
+  {
+    "timestamp": "2025-08-02T15:28:53.586781",
+    "event_type": "generic_comment_detected",
+    "bot_id": "bot_view_farm_cc8622d5",
+    "video_id": "yt_203a660750b",
+    "comment": "Thanks for sharing",
+    "risk_score": 0.7226042598494709
+  }
+]

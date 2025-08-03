@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Full Bot Research Analysis",
+			"type": "shell",
+			"command": "/Users/omer3kale/BOTZZZ/.venv/bin/python",
+			"args": [
+				"research/comprehensive_analyzer.py"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			]
+		}
+	]
+}

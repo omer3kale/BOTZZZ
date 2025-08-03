@@ -1,0 +1,20 @@
+{
+  "simulation_parameters": {
+    "real_users": 200,
+    "bots": 50,
+    "tracks": 25,
+    "steps": 100
+  },
+  "revenue_analysis": {
+    "total_real_revenue": 29.415,
+    "total_bot_revenue": 93.8775,
+    "bot_revenue_percentage": 76.14,
+    "revenue_per_real_stream": 0.0037,
+    "revenue_per_bot_stream": 0.0042
+  },
+  "stream_analysis": {
+    "total_real_streams": 7852,
+    "total_bot_streams": 22443,
+    "bot_stream_percentage": 74.08
+  }
+}

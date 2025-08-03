@@ -1,0 +1,60 @@
+{
+  "youtube": {
+    "platform": "youtube",
+    "estimated_market_size": {
+      "daily_market_size_low": 250000.0,
+      "daily_market_size_high": 2500000.0,
+      "annual_market_size_low": 91250000.0,
+      "annual_market_size_high": 912500000.0
+    },
+    "roi_analysis": {
+      "gross_roi": -0.7,
+      "risk_adjusted_roi": -0.03500000000000003,
+      "break_even_views": 3333.333333333333
+    },
+    "detection_risk": 0.95,
+    "economic_impact": {
+      "direct_revenue_loss": 273750000.0,
+      "advertiser_fraud_loss": 1825000000.0,
+      "creator_unfair_advantage": 0,
+      "platform_detection_costs": 91250000.0
+    }
+  },
+  "spotify": {
+    "platform": "spotify",
+    "estimated_market_size": {
+      "daily_market_size_low": 1500.0,
+      "daily_market_size_high": 6000.0,
+      "annual_market_size_low": 547500.0,
+      "annual_market_size_high": 2190000.0
+    },
+    "roi_analysis": {
+      "gross_roi": 2.2,
+      "risk_adjusted_roi": 0.484,
+      "break_even_streams": 312.5
+    },
+    "detection_risk": 0.78,
+    "economic_impact": {
+      "direct_revenue_loss": 876000.0,
+      "advertiser_fraud_loss": 0,
+      "creator_unfair_advantage": 0,
+      "platform_detection_costs": 328500.0,
+      "artist_unfair_advantage": 3285000.0
+    }
+  },
+  "instagram": {
+    "platform": "instagram",
+    "estimated_market_size": {
+      "annual_fake_market_size": 1300000000.0,
+      "daily_market_size_estimate": 3561643.835616438
+    },
+    "roi_analysis": {},
+    "detection_risk": 0.7,
+    "economic_impact": {
+      "direct_revenue_loss": 0,
+      "advertiser_fraud_loss": 0,
+      "creator_unfair_advantage": 0,
+      "platform_detection_costs": 0
+    }
+  }
+}
