@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- System Status Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <div class="metric-value">{{ simulation_stats[0] if simulation_stats else 0 }}</div>
+            <div class="metric-label">
+                <i class="fas fa-play-circle me-1"></i>Total Simulations
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+            <div class="metric-value">{{ simulation_stats[1] if simulation_stats else 0 }}</div>
+            <div class="metric-label">
+                <i class="fas fa-spinner me-1"></i>Running
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+            <div class="metric-value">{{ simulation_stats[2] if simulation_stats else 0 }}</div>
+            <div class="metric-label">
+                <i class="fas fa-check-circle me-1"></i>Completed
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="metric-card" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+            <div class="metric-value">{{ simulation_stats[3] if simulation_stats else 0 }}</div>
+            <div class="metric-label">
+                <i class="fas fa-exclamation-triangle me-1"></i>Failed
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Metrics -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-area me-2"></i>System Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ system_metrics.cpu_usage }}"></div>
+                            </div>
+                            <small class="text-muted">CPU Usage: {{ system_metrics.cpu_usage }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ system_metrics.memory_usage }}"></div>
+                            </div>
+                            <small class="text-muted">Memory: {{ system_metrics.memory_usage }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ system_metrics.disk_usage }}"></div>
+                            </div>
+                            <small class="text-muted">Disk: {{ system_metrics.disk_usage }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-clock me-2"></i>Uptime</h6>
+                        <p class="text-muted">{{ system_metrics.uptime }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-network-wired me-2"></i>Active Connections</h6>
+                        <p class="text-muted">{{ system_metrics.active_connections }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>System Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">Overall Health</h6>
+                        <small class="text-muted">All systems operational</small>
+                    </div>
+                    <span class="badge bg-success status-indicator">Healthy</span>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">Bot Detection</h6>
+                        <small class="text-muted">Active monitoring</small>
+                    </div>
+                    <span class="badge bg-success">Active</span>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">Database</h6>
+                        <small class="text-muted">Connected</small>
+                    </div>
+                    <span class="badge bg-success">Online</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">API Services</h6>
+                        <small class="text-muted">All endpoints responding</small>
+                    </div>
+                    <span class="badge bg-success">Operational</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Simulations
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_simulations %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for simulation in recent_simulations %}
+                            <tr>
+                                <td>{{ simulation[0] }}</td>
+                                <td><span class="badge bg-secondary">{{ simulation[1] }}</span></td>
+                                <td>
+                                    <span class="status-badge status-{{ simulation[2] }}">
+                                        {{ simulation[2].title() }}
+                                    </span>
+                                </td>
+                                <td>{{ simulation[3][:16] if simulation[3] else 'N/A' }}</td>
+                                <td>
+                                    {% if simulation[4] and simulation[3] %}
+                                        {{ ((simulation[4]|as_datetime) - (simulation[3]|as_datetime)).total_seconds() // 60 }} min
+                                    {% else %}
+                                        Running...
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No simulations found. <a href="{{ url_for('simulations') }}">Create your first simulation</a></p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>System Alerts
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if log_stats %}
+                    {% for level, count in log_stats %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="flex-grow-1">
+                            <span class="badge bg-{% if level == 'ERROR' %}danger{% elif level == 'WARNING' %}warning{% else %}info{% endif %} me-2">
+                                {{ level }}
+                            </span>
+                            Last 24 hours
+                        </div>
+                        <strong>{{ count }}</strong>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <p class="text-muted mb-0">No alerts</p>
+                    <small>System running smoothly</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if current_user.role in ['operator', 'super_admin'] %}
+                    <a href="{{ url_for('create_simulation') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Simulation
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('analytics') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line me-2"></i>View Analytics
+                    </a>
+                    <a href="{{ url_for('detection') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-shield-alt me-2"></i>Bot Detection
+                    </a>
+                    <a href="{{ url_for('logs') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-alt me-2"></i>System Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Chart -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>Real-time Activity Monitor
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time activity chart
+const ctx = document.getElementById('activityChart').getContext('2d');
+const activityChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'System Activity',
+            data: [],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Bot Detection Events',
+            data: [],
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        }
+    }
+});
+
+// Simulate real-time data updates
+function updateChart() {
+    const now = new Date();
+    const timeLabel = now.toLocaleTimeString();
+    
+    // Add new data point
+    activityChart.data.labels.push(timeLabel);
+    activityChart.data.datasets[0].data.push(Math.floor(Math.random() * 100) + 20);
+    activityChart.data.datasets[1].data.push(Math.floor(Math.random() * 10));
+    
+    // Keep only last 10 data points
+    if (activityChart.data.labels.length > 10) {
+        activityChart.data.labels.shift();
+        activityChart.data.datasets[0].data.shift();
+        activityChart.data.datasets[1].data.shift();
+    }
+    
+    activityChart.update('none');
+}
+
+// Update chart every 5 seconds
+setInterval(updateChart, 5000);
+
+// Initialize with some data
+for (let i = 0; i < 5; i++) {
+    updateChart();
+}
+</script>
+
+<style>
+.metric-card {
+    transition: transform 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+
+.progress {
+    border-radius: 10px;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+#activityChart {
+    height: 300px !important;
+}
+</style>
+{% endblock %}

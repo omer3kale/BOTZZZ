@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-plus-circle me-2"></i>Create New Simulation
+    </h1>
+    <a href="{{ url_for('simulations') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Simulations
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Simulation Configuration
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="simulationForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="simulationName" class="form-label">Simulation Name</label>
+                                <input type="text" class="form-control" id="simulationName" name="name" required>
+                                <div class="form-text">Enter a descriptive name for your simulation</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="simulationType" class="form-label">Platform Type</label>
+                                <select class="form-select" id="simulationType" name="type" required>
+                                    <option value="">Select Platform</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="multi-platform">Multi-Platform</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="numCreators" class="form-label">Number of Creators</label>
+                                <input type="number" class="form-control" id="numCreators" name="num_creators" value="5" min="1" max="100">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="numRealUsers" class="form-label">Real Users</label>
+                                <input type="number" class="form-control" id="numRealUsers" name="num_real_users" value="100" min="10" max="10000">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="numBots" class="form-label">Bot Accounts</label>
+                                <input type="number" class="form-control" id="numBots" name="num_bots" value="20" min="1" max="1000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="simulationSteps" class="form-label">Simulation Duration (Steps)</label>
+                                <input type="number" class="form-control" id="simulationSteps" name="simulation_steps" value="50" min="10" max="1000">
+                                <div class="form-text">Each step represents ~10 minutes of activity</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="scaleFactor" class="form-label">Scale Factor</label>
+                                <select class="form-select" id="scaleFactor" name="scale_factor">
+                                    <option value="1">Normal (1x)</option>
+                                    <option value="5">Large Scale (5x)</option>
+                                    <option value="10">Enterprise (10x)</option>
+                                    <option value="50">Massive (50x)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bot Types to Include</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="viewFarm" name="bot_types" value="view_farm" checked>
+                                    <label class="form-check-label" for="viewFarm">
+                                        View Farm Bots
+                                        <small class="text-muted d-block">Basic view inflation</small>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="engagementPod" name="bot_types" value="engagement_pod">
+                                    <label class="form-check-label" for="engagementPod">
+                                        Engagement Pods
+                                        <small class="text-muted d-block">Coordinated engagement manipulation</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="subscriberFarm" name="bot_types" value="subscriber_farm">
+                                    <label class="form-check-label" for="subscriberFarm">
+                                        Subscriber Farms
+                                        <small class="text-muted d-block">Fake subscriber generation</small>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="sophisticatedBot" name="bot_types" value="sophisticated_bot">
+                                    <label class="form-check-label" for="sophisticatedBot">
+                                        Sophisticated Bots
+                                        <small class="text-muted d-block">AI-powered human-like behavior</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Advanced Options</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="networkForensics" name="advanced_options" value="network_forensics" checked>
+                                    <label class="form-check-label" for="networkForensics">
+                                        Enable Network Forensics
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="behavioralAnalysis" name="advanced_options" value="behavioral_analysis" checked>
+                                    <label class="form-check-label" for="behavioralAnalysis">
+                                        Behavioral Pattern Analysis
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="economicModeling" name="advanced_options" value="economic_modeling" checked>
+                                    <label class="form-check-label" for="economicModeling">
+                                        Economic Impact Modeling
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="realTimeDetection" name="advanced_options" value="real_time_detection">
+                                    <label class="form-check-label" for="realTimeDetection">
+                                        Real-time Detection Simulation
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter a description for this simulation..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-outline-secondary" onclick="previewConfiguration()">
+                            <i class="fas fa-eye me-2"></i>Preview Configuration
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-rocket me-2"></i>Create Simulation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Simulation Guide
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Platform Types</h6>
+                <ul class="list-unstyled">
+                    <li><strong>YouTube:</strong> Video engagement simulation</li>
+                    <li><strong>Instagram:</strong> Photo/story engagement</li>
+                    <li><strong>TikTok:</strong> Short-form video virality</li>
+                    <li><strong>Multi-Platform:</strong> Cross-platform analysis</li>
+                </ul>
+
+                <h6 class="mt-3">Scale Guidelines</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Normal (1x):</strong> Research & testing</li>
+                    <li><strong>Large (5x):</strong> Medium-scale analysis</li>
+                    <li><strong>Enterprise (10x):</strong> Large-scale studies</li>
+                    <li><strong>Massive (50x):</strong> Platform-wide simulation</li>
+                </ul>
+
+                <h6 class="mt-3">Estimated Resources</h6>
+                <div id="resourceEstimate">
+                    <small class="text-muted">Configure simulation to see estimates</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Performance Impact
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <small class="text-muted">CPU Usage</small>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-info" id="cpuEstimate" role="progressbar" style="width: 25%"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Memory Usage</small>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-warning" id="memoryEstimate" role="progressbar" style="width: 30%"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted">Disk I/O</small>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" id="diskEstimate" role="progressbar" style="width: 15%"></div>
+                    </div>
+                </div>
+                <small class="text-muted">Estimated Duration: <span id="durationEstimate">~8 minutes</span></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('simulationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Collect form data
+    const formData = new FormData(this);
+    const data = {
+        name: formData.get('name'),
+        type: formData.get('type'),
+        parameters: {
+            num_creators: parseInt(formData.get('num_creators')),
+            num_real_users: parseInt(formData.get('num_real_users')),
+            num_bots: parseInt(formData.get('num_bots')),
+            simulation_steps: parseInt(formData.get('simulation_steps')),
+            scale_factor: parseInt(formData.get('scale_factor')),
+            bot_types: formData.getAll('bot_types'),
+            advanced_options: formData.getAll('advanced_options'),
+            description: formData.get('description')
+        }
+    };
+    
+    // Validate required fields
+    if (!data.name || !data.type) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    if (data.parameters.bot_types.length === 0) {
+        alert('Please select at least one bot type');
+        return;
+    }
+    
+    // Submit simulation
+    fetch('/simulations/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('Simulation created successfully!');
+            window.location.href = '/simulations';
+        } else {
+            alert('Error creating simulation: ' + result.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating simulation');
+    });
+});
+
+function updateResourceEstimate() {
+    const numCreators = parseInt(document.getElementById('numCreators').value) || 0;
+    const numRealUsers = parseInt(document.getElementById('numRealUsers').value) || 0;
+    const numBots = parseInt(document.getElementById('numBots').value) || 0;
+    const steps = parseInt(document.getElementById('simulationSteps').value) || 0;
+    const scaleFactor = parseInt(document.getElementById('scaleFactor').value) || 1;
+    
+    const totalUsers = (numRealUsers + numBots) * scaleFactor;
+    const totalEvents = totalUsers * steps * 2; // Approximate events per user per step
+    
+    // Update resource estimates
+    const cpuUsage = Math.min(100, (totalEvents / 10000) * 100);
+    const memoryUsage = Math.min(100, (totalUsers / 1000) * 100);
+    const diskUsage = Math.min(100, (totalEvents / 50000) * 100);
+    const duration = Math.ceil((totalEvents / 1000) + 2); // Base time + processing
+    
+    document.getElementById('cpuEstimate').style.width = cpuUsage + '%';
+    document.getElementById('memoryEstimate').style.width = memoryUsage + '%';
+    document.getElementById('diskEstimate').style.width = diskUsage + '%';
+    document.getElementById('durationEstimate').textContent = `~${duration} minutes`;
+    
+    // Update resource estimate text
+    document.getElementById('resourceEstimate').innerHTML = `
+        <small class="text-muted">
+            <strong>Total Users:</strong> ${totalUsers.toLocaleString()}<br>
+            <strong>Events:</strong> ~${totalEvents.toLocaleString()}<br>
+            <strong>Data Size:</strong> ~${Math.ceil(totalEvents / 1000)} MB
+        </small>
+    `;
+}
+
+function previewConfiguration() {
+    updateResourceEstimate();
+    const formData = new FormData(document.getElementById('simulationForm'));
+    const config = {};
+    for (let [key, value] of formData.entries()) {
+        config[key] = value;
+    }
+    
+    alert('Configuration Preview:\n' + JSON.stringify(config, null, 2));
+}
+
+// Update estimates when inputs change
+['numCreators', 'numRealUsers', 'numBots', 'simulationSteps', 'scaleFactor'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateResourceEstimate);
+});
+
+// Initial update
+updateResourceEstimate();
+</script>
+{% endblock %}
