@@ -13,7 +13,10 @@ requests>=2.31.0
 beautifulsoup4>=4.12.0
 
 ## Database
-sqlite3  # Built into Python
+Flask==2.3.3
+Flask-Login==0.6.2
+Werkzeug==2.3.7
+Jinja2==3.1.2  # Built into Python
 
 ## Development
 jupyter>=1.0.0

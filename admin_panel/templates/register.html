@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg">
+                <div class="card-header text-center bg-success">
+                    <h4 class="mb-0 text-white">
+                        <i class="fas fa-user-plus me-2"></i>BOTZZZ Registration
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <input type="text" class="form-control" id="username" name="username" required
+                                   placeholder="Enter your username">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                   placeholder="Enter your email">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" required
+                                   placeholder="Enter your password">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Confirm Password
+                            </label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required
+                                   placeholder="Confirm your password">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="service_type" class="form-label">
+                                <i class="fas fa-cogs me-2"></i>Service Interest
+                            </label>
+                            <select class="form-select" id="service_type" name="service_type" required>
+                                <option value="">Select your primary interest</option>
+                                <option value="instagram">Instagram Growth</option>
+                                <option value="youtube">YouTube Optimization</option>
+                                <option value="tiktok">TikTok Viral Growth</option>
+                                <option value="analytics">Analytics & Detection</option>
+                                <option value="enterprise">Enterprise Solutions</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            Already have an account? 
+                            <a href="{{ url_for('user_login') }}" class="text-decoration-none">Login here</a>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Admin Access? <a href="{{ url_for('login') }}" class="text-decoration-none">Admin Panel</a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-header {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #10b981, #059669);
+    border: none;
+    transition: transform 0.2s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+</style>
+{% endblock %}

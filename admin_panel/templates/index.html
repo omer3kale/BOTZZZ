@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOTZZZ - Premium Social Media Growth Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --dark-color: #2d3748;
+            --light-color: #f8fafc;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: none;
+            height: 100%;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .service-icon {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .service-title {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .service-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: #555;
+        }
+        
+        .feature-list li i {
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+        }
+        
+        .pricing-badge {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .stats-section {
+            background: white;
+            padding: 4rem 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, var(--dark-color), #4a5568);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .navbar-custom {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-robot"></i> BOTZZZ</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#stats">Stats</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/login">Admin Panel</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">BOTZZZ</h1>
+            <p class="hero-subtitle">Premium Social Media Growth & Analytics Platform</p>
+            <p class="lead">Advanced bot detection, engagement simulation, and social media intelligence services</p>
+            <a href="#services" class="btn btn-primary-custom btn-lg mt-3">Explore Services</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 text-white mb-3">Our Services</h2>
+                    <p class="lead text-white-50">Comprehensive social media growth and analysis solutions</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Instagram Bot Services -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="service-card">
+                        <div class="text-center">
+                            <i class="fab fa-instagram service-icon"></i>
+                            <h3 class="service-title">Instagram Growth</h3>
+                        </div>
+                        <p class="service-description">Professional Instagram engagement and follower growth services with advanced targeting and organic-looking interactions.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Real-looking follower growth</li>
+                            <li><i class="fas fa-check"></i> Engagement pod management</li>
+                            <li><i class="fas fa-check"></i> Story views & likes</li>
+                            <li><i class="fas fa-check"></i> Comment management</li>
+                            <li><i class="fas fa-check"></i> Hashtag optimization</li>
+                        </ul>
+                        <div class="text-center mt-3">
+                            <span class="pricing-badge">Starting $29/month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- YouTube Bot Services -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="service-card">
+                        <div class="text-center">
+                            <i class="fab fa-youtube service-icon"></i>
+                            <h3 class="service-title">YouTube Optimization</h3>
+                        </div>
+                        <p class="service-description">Comprehensive YouTube growth services including view generation, subscriber growth, and engagement enhancement.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> High-retention view generation</li>
+                            <li><i class="fas fa-check"></i> Subscriber farming</li>
+                            <li><i class="fas fa-check"></i> Like & comment generation</li>
+                            <li><i class="fas fa-check"></i> Watch time optimization</li>
+                            <li><i class="fas fa-check"></i> Algorithm boost</li>
+                        </ul>
+                        <div class="text-center mt-3">
+                            <span class="pricing-badge">Starting $49/month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TikTok Bot Services -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="service-card">
+                        <div class="text-center">
+                            <i class="fab fa-tiktok service-icon"></i>
+                            <h3 class="service-title">TikTok Viral Growth</h3>
+                        </div>
+                        <p class="service-description">TikTok-specific growth strategies with viral content optimization and engagement multiplication.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Viral view generation</li>
+                            <li><i class="fas fa-check"></i> Follower acquisition</li>
+                            <li><i class="fas fa-check"></i> Share & comment boost</li>
+                            <li><i class="fas fa-check"></i> For You Page optimization</li>
+                            <li><i class="fas fa-check"></i> Trend analysis</li>
+                        </ul>
+                        <div class="text-center mt-3">
+                            <span class="pricing-badge">Starting $39/month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bot Detection & Security -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="service-card">
+                        <div class="text-center">
+                            <i class="fas fa-shield-alt service-icon"></i>
+                            <h3 class="service-title">Bot Detection & Security</h3>
+                        </div>
+                        <p class="service-description">Advanced bot detection systems to identify fake engagement and protect your social media accounts.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Real-time bot detection</li>
+                            <li><i class="fas fa-check"></i> Engagement authenticity analysis</li>
+                            <li><i class="fas fa-check"></i> Network forensics</li>
+                            <li><i class="fas fa-check"></i> Risk assessment reports</li>
+                            <li><i class="fas fa-check"></i> Security recommendations</li>
+                        </ul>
+                        <div class="text-center mt-3">
+                            <span class="pricing-badge">Starting $99/month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics & Intelligence -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="service-card">
+                        <div class="text-center">
+                            <i class="fas fa-chart-line service-icon"></i>
+                            <h3 class="service-title">Social Media Analytics</h3>
+                        </div>
+                        <p class="service-description">Comprehensive analytics platform with real-time monitoring, competitor analysis, and growth insights.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Real-time dashboard</li>
+                            <li><i class="fas fa-check"></i> Competitor analysis</li>
+                            <li><i class="fas fa-check"></i> Engagement quality scoring</li>
+                            <li><i class="fas fa-check"></i> Growth forecasting</li>
+                            <li><i class="fas fa-check"></i> Custom reports</li>
+                        </ul>
+                        <div class="text-center mt-3">
+                            <span class="pricing-badge">Starting $79/month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Solutions -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="service-card">
+                        <div class="text-center">
+                            <i class="fas fa-cogs service-icon"></i>
+                            <h3 class="service-title">Custom Solutions</h3>
+                        </div>
+                        <p class="service-description">Tailored social media growth solutions for enterprises, agencies, and high-volume clients.</p>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check"></i> Enterprise-grade infrastructure</li>
+                            <li><i class="fas fa-check"></i> Custom API integration</li>
+                            <li><i class="fas fa-check"></i> White-label solutions</li>
+                            <li><i class="fas fa-check"></i> Dedicated support</li>
+                            <li><i class="fas fa-check"></i> Custom reporting</li>
+                        </ul>
+                        <div class="text-center mt-3">
+                            <span class="pricing-badge">Contact for Quote</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 mb-3">Platform Features</h2>
+                    <p class="lead text-muted">Advanced technology powering your social media success</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center p-4">
+                        <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                        <h4>AI-Powered Bots</h4>
+                        <p class="text-muted">Advanced AI algorithms for human-like behavior patterns and undetectable automation.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center p-4">
+                        <i class="fas fa-network-wired fa-3x text-primary mb-3"></i>
+                        <h4>Global Network</h4>
+                        <p class="text-muted">Worldwide proxy network with residential IPs for geographic targeting and authenticity.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center p-4">
+                        <i class="fas fa-lock fa-3x text-primary mb-3"></i>
+                        <h4>Enterprise Security</h4>
+                        <p class="text-muted">Bank-grade security protocols protecting your accounts and maintaining anonymity.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center p-4">
+                        <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                        <h4>24/7 Operations</h4>
+                        <p class="text-muted">Round-the-clock automation with intelligent scheduling and natural activity patterns.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="py-5" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="display-4 text-white mb-3">Platform Statistics</h2>
+                    <p class="lead text-white-50">Trusted by thousands of creators and businesses worldwide</p>
+                </div>
+            </div>
+            
+            <div class="row text-center">
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-white">50M+</div>
+                        <div class="stat-label text-white-50">Engagements Generated</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-white">10K+</div>
+                        <div class="stat-label text-white-50">Active Clients</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-white">99.9%</div>
+                        <div class="stat-label text-white-50">Uptime Guarantee</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="stat-item">
+                        <div class="stat-number text-white">24/7</div>
+                        <div class="stat-label text-white-50">Expert Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="display-4 mb-4">Ready to Grow Your Social Presence?</h2>
+                    <p class="lead mb-4">Join thousands of successful creators and businesses using BOTZZZ for social media growth</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="/login" class="btn btn-primary-custom btn-lg">Access Admin Panel</a>
+                        <a href="#services" class="btn btn-outline-light btn-lg">View Services</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-robot"></i> BOTZZZ</h5>
+                    <p class="text-muted">Premium social media growth and analytics platform.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">&copy; 2025 BOTZZZ. All rights reserved.</p>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://github.com/omer3kale/BOTZZZ" class="text-white"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar-custom');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(255,255,255,0.98)';
+            } else {
+                navbar.style.background = 'rgba(255,255,255,0.95)';
+            }
+        });
+    </script>
+</body>
+</html>

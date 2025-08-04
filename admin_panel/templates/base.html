@@ -238,10 +238,13 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
                 <i class="fas fa-robot me-2"></i>BOTZZZ Admin Panel
             </a>
             <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('home') }}">
+                    <i class="fas fa-home me-1"></i>Home
+                </a>
                 {% if current_user.is_authenticated %}
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
@@ -302,7 +305,11 @@
             </nav>
             {% endif %}
 
+            {% if current_user.is_authenticated %}
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            {% else %}
+            <main class="col-12 px-0 main-content">
+            {% endif %}
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         <div class="mt-3">

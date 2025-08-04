@@ -24,25 +24,40 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# Admin user class
-class AdminUser(UserMixin):
-    def __init__(self, user_id, username, password_hash, role='admin'):
+# Enhanced user class with registration fields
+class User(UserMixin):
+    def __init__(self, user_id, username, password_hash, role='user', email=None, service_type=None, created_at=None):
         self.id = user_id
         self.username = username
         self.password_hash = password_hash
         self.role = role
-        self.is_active = True
+        self.email = email
+        self.service_type = service_type
+        self.created_at = created_at or datetime.now().isoformat()
+
+    @property
+    def is_active(self):
+        return True
 
 # Simulated user database (in production, use proper database)
 ADMIN_USERS = {
-    'admin': AdminUser('1', 'admin', generate_password_hash('BOTZZZ2025!'), 'super_admin'),
-    'operator': AdminUser('2', 'operator', generate_password_hash('operator123'), 'operator'),
-    'viewer': AdminUser('3', 'viewer', generate_password_hash('viewer123'), 'viewer')
+    'admin': User('1', 'admin', generate_password_hash('BOTZZZ2025!'), 'super_admin', 'admin@botzzz.com'),
+    'operator': User('2', 'operator', generate_password_hash('operator123'), 'operator', 'operator@botzzz.com'),
+    'viewer': User('3', 'viewer', generate_password_hash('viewer123'), 'viewer', 'viewer@botzzz.com')
 }
+
+# Regular user database
+USERS = {}
 
 @login_manager.user_loader
 def load_user(user_id):
+    """Load user by ID from both admin and regular user databases."""
+    # Check admin users first
     for user in ADMIN_USERS.values():
+        if user.id == user_id:
+            return user
+    # Check regular users
+    for user in USERS.values():
         if user.id == user_id:
             return user
     return None
@@ -138,12 +153,6 @@ def log_system_event(level, message, component='system', user_id=None):
     conn.close()
 
 # Routes
-@app.route('/')
-def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -168,12 +177,82 @@ def logout():
     log_system_event('INFO', f'User {current_user.username} logged out', 'auth', current_user.id)
     logout_user()
     flash('You have been logged out successfully', 'info')
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """User registration."""
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        service_type = request.form['service_type']
+        
+        # Validation
+        if not username or not email or not password:
+            flash('All fields are required', 'error')
+            return render_template('register.html')
+        
+        if password != confirm_password:
+            flash('Passwords do not match', 'error')
+            return render_template('register.html')
+        
+        # Check if username already exists
+        if username in USERS or username in ADMIN_USERS:
+            flash('Username already exists', 'error')
+            return render_template('register.html')
+        
+        # Create new user
+        user_id = str(len(USERS) + len(ADMIN_USERS) + 10)  # Simple ID generation
+        new_user = User(user_id, username, generate_password_hash(password), 'user', email, service_type)
+        USERS[username] = new_user
+        
+        log_system_event('INFO', f'New user registered: {username}', 'auth')
+        flash('Registration successful! Please login.', 'success')
+        return redirect(url_for('user_login'))
+    
+    return render_template('register.html')
+
+@app.route('/user-login', methods=['GET', 'POST'])
+def user_login():
+    """User login."""
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        remember = 'remember_me' in request.form
+        
+        user = USERS.get(username)
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user, remember=remember)
+            log_system_event('INFO', f'User {username} logged in', 'auth', user.id)
+            flash(f'Welcome back, {username}!', 'success')
+            return redirect(url_for('user_dashboard'))
+        else:
+            log_system_event('WARNING', f'Failed user login attempt for username: {username}', 'auth')
+            flash('Invalid username or password', 'error')
+    
+    return render_template('user_login.html')
+
+@app.route('/user-dashboard')
+@login_required
+def user_dashboard():
+    """User dashboard - only for regular users."""
+    if current_user.role in ['super_admin', 'admin', 'operator', 'viewer']:
+        # Redirect admin users to admin dashboard
+        return redirect(url_for('dashboard'))
+    return render_template('user_dashboard.html')
+
+# Routes
+@app.route('/')
+def home():
+    """Public index page showcasing BOTZZZ services."""
+    return render_template('index.html')
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    """Main dashboard with system overview"""
+    """Dashboard with real-time analytics."""
     # Get recent simulation runs
     conn = sqlite3.connect('botzzz_admin.db')
     cursor = conn.cursor()
@@ -574,6 +653,6 @@ if __name__ == '__main__':
     print("  Admin: admin / BOTZZZ2025!")
     print("  Operator: operator / operator123")
     print("  Viewer: viewer / viewer123")
-    print("\nAccess the panel at: http://localhost:5000")
+    print("\nAccess the panel at: http://localhost:5001")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
