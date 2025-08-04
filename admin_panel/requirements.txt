@@ -6,6 +6,6 @@ blinker==1.9.0
 click==8.2.1
 itsdangerous==2.2.0
 MarkupSafe==3.0.2
-requests==2.31.0
+requests==2.32.4
 python-dotenv==1.0.0
-gunicorn==21.2.0
+gunicorn==23.0.0
