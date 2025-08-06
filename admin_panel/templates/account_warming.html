@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-fire me-2"></i>Account Warming Service
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{{ url_for('infrastructure') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Infrastructure
+                </a>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addWarmingAccountModal">
+                    <i class="fas fa-plus"></i> Add Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warming Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                In Warming
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ accounts_in_warming }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-thermometer-half fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Ready Accounts
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ ready_accounts }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Avg Progress
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.0f%" | format(average_progress * 100) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Success Rate
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.1f%" | format(success_rate * 100) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warming Stages Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Warming Stages</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <div class="card border-left-secondary h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-user-plus text-secondary"></i><br>
+                                        Registration
+                                    </h5>
+                                    <p class="card-text small">
+                                        <strong>Days 0-2</strong><br>
+                                        Account creation<br>
+                                        Profile setup<br>
+                                        Basic information
+                                    </p>
+                                    <span class="badge bg-secondary">Stage 1</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card border-left-info h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-seedling text-info"></i><br>
+                                        Initial Activity
+                                    </h5>
+                                    <p class="card-text small">
+                                        <strong>Days 3-7</strong><br>
+                                        Light browsing<br>
+                                        Profile views<br>
+                                        Minimal engagement
+                                    </p>
+                                    <span class="badge bg-info">Stage 2</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card border-left-primary h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-heart text-primary"></i><br>
+                                        Basic Engagement
+                                    </h5>
+                                    <p class="card-text small">
+                                        <strong>Days 8-14</strong><br>
+                                        Likes and reactions<br>
+                                        Comments (simple)<br>
+                                        Content consumption
+                                    </p>
+                                    <span class="badge bg-primary">Stage 3</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card border-left-warning h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-users text-warning"></i><br>
+                                        Social Building
+                                    </h5>
+                                    <p class="card-text small">
+                                        <strong>Days 15-30</strong><br>
+                                        Following accounts<br>
+                                        More interactions<br>
+                                        Content sharing
+                                    </p>
+                                    <span class="badge bg-warning">Stage 4</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card border-left-success h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-crown text-success"></i><br>
+                                        Established
+                                    </h5>
+                                    <p class="card-text small">
+                                        <strong>Days 30+</strong><br>
+                                        Full activity<br>
+                                        Content creation<br>
+                                        Ready for automation
+                                    </p>
+                                    <span class="badge bg-success">Stage 5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Warming Queue -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Warming Queue</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Platform</th>
+                                    <th>Stage</th>
+                                    <th>Progress</th>
+                                    <th>Days Active</th>
+                                    <th>Risk Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for account in warming_accounts %}
+                                <tr>
+                                    <td>
+                                        {{ account.account_id[:12] }}...
+                                        {% if account.stage >= 5 %}
+                                        <br><span class="badge bg-success">Ready</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if account.platform == 'youtube' %}
+                                            <i class="fab fa-youtube text-danger"></i> YouTube
+                                        {% elif account.platform == 'instagram' %}
+                                            <i class="fab fa-instagram text-primary"></i> Instagram
+                                        {% elif account.platform == 'tiktok' %}
+                                            <i class="fab fa-tiktok text-dark"></i> TikTok
+                                        {% elif account.platform == 'twitter' %}
+                                            <i class="fab fa-twitter text-info"></i> Twitter
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if account.stage == 1 %}bg-secondary
+                                            {% elif account.stage == 2 %}bg-info
+                                            {% elif account.stage == 3 %}bg-primary
+                                            {% elif account.stage == 4 %}bg-warning
+                                            {% else %}bg-success{% endif %}">
+                                            Stage {{ account.stage }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar
+                                                {% if account.progress < 0.5 %}bg-warning
+                                                {% elif account.progress < 0.8 %}bg-info
+                                                {% else %}bg-success{% endif %}"
+                                                role="progressbar"
+                                                style="width: {{ (account.progress * 100)|int }}%">
+                                                {{ "%.0f%" | format(account.progress * 100) }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ account.days_active }}</td>
+                                    <td>
+                                        {% if account.risk_score < 0.3 %}
+                                            <span class="badge bg-success">Low</span>
+                                        {% elif account.risk_score < 0.7 %}
+                                            <span class="badge bg-warning">Medium</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">High</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewAccountDetails('{{ account.account_id }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if account.stage >= 5 %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="graduateAccount('{{ account.account_id }}')">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No accounts in warming process</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warming Control Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Warming Controls</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="warmingSpeed" class="form-label">Warming Speed</label>
+                        <select class="form-select" id="warmingSpeed">
+                            <option value="conservative">Conservative (Safe)</option>
+                            <option value="normal" selected>Normal (Balanced)</option>
+                            <option value="aggressive">Aggressive (Fast)</option>
+                        </select>
+                        <small class="text-muted">Conservative takes 45+ days, Aggressive takes 20+ days</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="humanBehavior" checked>
+                            <label class="form-check-label" for="humanBehavior">
+                                Human-like behavior patterns
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="randomTiming" checked>
+                            <label class="form-check-label" for="randomTiming">
+                                Randomized timing
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="weekendActivity" checked>
+                            <label class="form-check-label" for="weekendActivity">
+                                Weekend activity simulation
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="executeWarmingCycle()">
+                            <i class="fas fa-play"></i> Execute Cycle
+                        </button>
+                        <button class="btn btn-primary" onclick="pauseAllWarming()">
+                            <i class="fas fa-pause"></i> Pause All
+                        </button>
+                        <button class="btn btn-info" onclick="exportWarmingReport()">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage Distribution -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Stage Distribution</h6>
+                </div>
+                <div class="card-body">
+                    {% for stage in range(1, 6) %}
+                    {% set stage_count = warming_accounts | selectattr("stage", "equalto", stage) | list | length %}
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Stage {{ stage }}</span>
+                            <span>{{ stage_count }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar 
+                                {% if stage == 1 %}bg-secondary
+                                {% elif stage == 2 %}bg-info
+                                {% elif stage == 3 %}bg-primary
+                                {% elif stage == 4 %}bg-warning
+                                {% else %}bg-success{% endif %}"
+                                style="width: {{ (stage_count / (warming_accounts|length if warming_accounts else 1) * 100)|int }}%">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Daily Activities -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Today's Activities</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <strong>{{ daily_activities.likes }}</strong>
+                            <br><small class="text-muted">Likes</small>
+                        </div>
+                        <div class="col-6">
+                            <strong>{{ daily_activities.views }}</strong>
+                            <br><small class="text-muted">Views</small>
+                        </div>
+                    </div>
+                    <div class="row text-center mt-2">
+                        <div class="col-6">
+                            <strong>{{ daily_activities.follows }}</strong>
+                            <br><small class="text-muted">Follows</small>
+                        </div>
+                        <div class="col-6">
+                            <strong>{{ daily_activities.comments }}</strong>
+                            <br><small class="text-muted">Comments</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            Activities are distributed naturally throughout the day to mimic human behavior patterns.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Warming Account Modal -->
+<div class="modal fade" id="addWarmingAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Account to Warming</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addWarmingAccountForm">
+                    <div class="mb-3">
+                        <label for="warmingAccountId" class="form-label">Account ID</label>
+                        <input type="text" class="form-control" id="warmingAccountId" required>
+                        <small class="form-text text-muted">Unique identifier for this account</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="warmingPlatform" class="form-label">Platform</label>
+                        <select class="form-select" id="warmingPlatform" required>
+                            <option value="">Select Platform</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="twitter">Twitter</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="warmingProfile" class="form-label">Account Profile</label>
+                        <select class="form-select" id="warmingProfile" required>
+                            <option value="">Select Profile Type</option>
+                            <option value="personal">Personal Account</option>
+                            <option value="business">Business Account</option>
+                            <option value="creator">Content Creator</option>
+                            <option value="brand">Brand Account</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="warmingGoal" class="form-label">Warming Goal</label>
+                        <select class="form-select" id="warmingGoal" required>
+                            <option value="">Select Goal</option>
+                            <option value="engagement">Engagement Automation</option>
+                            <option value="growth">Growth Automation</option>
+                            <option value="content">Content Distribution</option>
+                            <option value="research">Market Research</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="expeditedWarming">
+                            <label class="form-check-label" for="expeditedWarming">
+                                Expedited warming (higher risk, faster completion)
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addWarmingAccount()">Start Warming</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewAccountDetails(accountId) {
+    alert(`Account Details: ${accountId}\n\nThis would show detailed warming progress, activity history, and risk analysis for this specific account.`);
+}
+
+function graduateAccount(accountId) {
+    if (confirm(`Graduate account ${accountId} from warming program?`)) {
+        alert(`Account ${accountId} has been graduated! It's now ready for full automation.`);
+        location.reload();
+    }
+}
+
+function executeWarmingCycle() {
+    const speed = document.getElementById('warmingSpeed').value;
+    alert(`Executing warming cycle in ${speed} mode...\n\nAll accounts will perform their scheduled activities based on their current stage and warming profile.`);
+}
+
+function pauseAllWarming() {
+    if (confirm('Pause all account warming activities?')) {
+        alert('All warming activities have been paused. You can resume them individually or collectively.');
+        location.reload();
+    }
+}
+
+function exportWarmingReport() {
+    alert('Generating warming report...\n\nThis would create a comprehensive report showing:\n- Progress by account\n- Stage distribution\n- Activity summaries\n- Risk assessments\n- Success predictions');
+}
+
+function addWarmingAccount() {
+    const form = document.getElementById('addWarmingAccountForm');
+    const formData = new FormData(form);
+    
+    const accountId = formData.get('warmingAccountId');
+    const platform = formData.get('warmingPlatform');
+    const profile = formData.get('warmingProfile');
+    const goal = formData.get('warmingGoal');
+    
+    if (!accountId || !platform || !profile || !goal) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+    
+    const expedited = document.getElementById('expeditedWarming').checked;
+    const estimatedDays = expedited ? '20-25 days' : '35-45 days';
+    
+    alert(`Account warming started!\n\nAccount: ${accountId}\nPlatform: ${platform}\nProfile: ${profile}\nGoal: ${goal}\nExpedited: ${expedited ? 'Yes' : 'No'}\nEstimated completion: ${estimatedDays}\n\nThe account will begin Stage 1 (Registration) activities.`);
+    
+    // Close modal and reload
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addWarmingAccountModal'));
+    modal.hide();
+    form.reset();
+    
+    setTimeout(() => {
+        location.reload();
+    }, 500);
+}
+
+// Auto-refresh every 2 minutes
+setTimeout(() => {
+    location.reload();
+}, 120000);
+</script>
+{% endblock %}

@@ -289,6 +289,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint in ['infrastructure', 'captcha_service', 'rate_limit_service', 'proxy_service', 'account_warming_service'] }}" href="{{ url_for('infrastructure') }}">
+                                <i class="fas fa-cogs me-2"></i>Infrastructure
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ 'active' if request.endpoint == 'logs' }}" href="{{ url_for('logs') }}">
                                 <i class="fas fa-file-alt me-2"></i>System Logs
                             </a>

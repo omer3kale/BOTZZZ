@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-tachometer-alt me-2"></i>Rate Limit Tracker
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{{ url_for('infrastructure') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Infrastructure
+                </a>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                    <i class="fas fa-plus"></i> Add Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                YouTube
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">100/hr</div>
+                            <small class="text-muted">Views Limit</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fab fa-youtube fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Instagram
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">60/hr</div>
+                            <small class="text-muted">Likes Limit</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fab fa-instagram fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-dark shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">
+                                TikTok
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">200/hr</div>
+                            <small class="text-muted">Likes Limit</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fab fa-tiktok fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Twitter
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">300/hr</div>
+                            <small class="text-muted">Likes Limit</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fab fa-twitter fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rate Limit Monitor -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Account Activity Monitoring</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Account</th>
+                                    <th>Platform</th>
+                                    <th>Current Usage</th>
+                                    <th>Risk Level</th>
+                                    <th>Next Reset</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if tracked_accounts %}
+                                    {% for account in tracked_accounts %}
+                                    <tr>
+                                        <td>{{ account.account_id[:8] }}...{{ account.account_id[-4:] }}</td>
+                                        <td>
+                                            {% if account.platform == 'youtube' %}
+                                                <i class="fab fa-youtube text-danger"></i> YouTube
+                                            {% elif account.platform == 'instagram' %}
+                                                <i class="fab fa-instagram text-primary"></i> Instagram
+                                            {% elif account.platform == 'tiktok' %}
+                                                <i class="fab fa-tiktok text-dark"></i> TikTok
+                                            {% elif account.platform == 'twitter' %}
+                                                <i class="fab fa-twitter text-info"></i> Twitter
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar 
+                                                    {% if account.usage_percent < 50 %}bg-success
+                                                    {% elif account.usage_percent < 80 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}" 
+                                                    role="progressbar" 
+                                                    style="width: {{ account.usage_percent }}%">
+                                                    {{ account.current_actions }}/{{ account.limit }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if account.risk_factor < 0.3 %}
+                                                <span class="badge bg-success">Low</span>
+                                            {% elif account.risk_factor < 0.7 %}
+                                                <span class="badge bg-warning">Medium</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ account.next_reset.strftime('%H:%M') if account.next_reset else 'N/A' }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewAccountDetails('{{ account.account_id }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning" onclick="pauseAccount('{{ account.account_id }}')">
+                                                <i class="fas fa-pause"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No accounts being tracked. Add an account to begin monitoring.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="bulkPlatform" class="form-label">Platform</label>
+                        <select class="form-select" id="bulkPlatform">
+                            <option value="all">All Platforms</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="twitter">Twitter</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="pauseAllAccounts()">
+                            <i class="fas fa-pause"></i> Pause All
+                        </button>
+                        <button class="btn btn-primary" onclick="resumeAllAccounts()">
+                            <i class="fas fa-play"></i> Resume All
+                        </button>
+                        <button class="btn btn-warning" onclick="resetLimits()">
+                            <i class="fas fa-redo"></i> Reset Limits
+                        </button>
+                        <button class="btn btn-info" onclick="exportReport()">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Analysis -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Risk Analysis</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Overall Risk Level</span>
+                            <span class="text-warning">{{ "%.1f%" | format(overall_risk * 100) }}</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar 
+                                {% if overall_risk < 0.3 %}bg-success
+                                {% elif overall_risk < 0.7 %}bg-warning
+                                {% else %}bg-danger{% endif %}" 
+                                style="width: {{ overall_risk * 100 }}%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="small text-muted">
+                        <div class="mb-2">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                            <strong>{{ high_risk_accounts }}</strong> accounts at high risk
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-clock text-info"></i>
+                            Average delay: <strong>{{ "%.1f" | format(avg_delay) }}s</strong>
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-chart-line text-success"></i>
+                            Success rate: <strong>{{ "%.1f%" | format(success_rate * 100) }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="font-weight-bold">Recommendations:</h6>
+                        <ul class="list-unstyled small">
+                            {% if overall_risk > 0.7 %}
+                            <li><i class="fas fa-times text-danger"></i> Reduce activity immediately</li>
+                            <li><i class="fas fa-pause text-warning"></i> Pause high-risk accounts</li>
+                            {% elif overall_risk > 0.4 %}
+                            <li><i class="fas fa-clock text-warning"></i> Increase delays between actions</li>
+                            <li><i class="fas fa-eye text-info"></i> Monitor closely</li>
+                            {% else %}
+                            <li><i class="fas fa-check text-success"></i> Current pace is safe</li>
+                            <li><i class="fas fa-trending-up text-success"></i> Can increase activity</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Account Modal -->
+<div class="modal fade" id="addAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Account to Monitor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAccountForm">
+                    <div class="mb-3">
+                        <label for="accountId" class="form-label">Account ID</label>
+                        <input type="text" class="form-control" id="accountId" required>
+                        <small class="form-text text-muted">Unique identifier for this account</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="platform" class="form-label">Platform</label>
+                        <select class="form-select" id="platform" required>
+                            <option value="">Select Platform</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="twitter">Twitter</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="actionType" class="form-label">Action Type</label>
+                        <select class="form-select" id="actionType" required>
+                            <option value="">Select Action Type</option>
+                            <option value="views">Views</option>
+                            <option value="likes">Likes</option>
+                            <option value="comments">Comments</option>
+                            <option value="follows">Follows</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="customLimit" class="form-label">Custom Limit (optional)</label>
+                        <input type="number" class="form-control" id="customLimit" min="1">
+                        <small class="form-text text-muted">Leave empty to use platform defaults</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addAccount()">Add Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewAccountDetails(accountId) {
+    alert(`Viewing details for account: ${accountId}\n\nThis would show detailed activity history, limit usage patterns, and risk analysis.`);
+}
+
+function pauseAccount(accountId) {
+    if (confirm(`Pause monitoring for account ${accountId}?`)) {
+        alert(`Account ${accountId} has been paused. All activity monitoring is temporarily stopped.`);
+        location.reload();
+    }
+}
+
+function pauseAllAccounts() {
+    const platform = document.getElementById('bulkPlatform').value;
+    const platformText = platform === 'all' ? 'all platforms' : platform;
+    
+    if (confirm(`Pause all accounts on ${platformText}?`)) {
+        alert(`All accounts on ${platformText} have been paused.`);
+        location.reload();
+    }
+}
+
+function resumeAllAccounts() {
+    const platform = document.getElementById('bulkPlatform').value;
+    const platformText = platform === 'all' ? 'all platforms' : platform;
+    
+    if (confirm(`Resume all accounts on ${platformText}?`)) {
+        alert(`All accounts on ${platformText} have been resumed.`);
+        location.reload();
+    }
+}
+
+function resetLimits() {
+    if (confirm('Reset all rate limits? This will clear current usage counters.')) {
+        alert('All rate limits have been reset. Usage counters cleared.');
+        location.reload();
+    }
+}
+
+function exportReport() {
+    alert('Generating rate limit report...\n\nThis would create a detailed PDF/CSV report of all account activity, limits, and risk analysis.');
+}
+
+function addAccount() {
+    const form = document.getElementById('addAccountForm');
+    const formData = new FormData(form);
+    
+    const accountId = formData.get('accountId');
+    const platform = formData.get('platform');
+    const actionType = formData.get('actionType');
+    
+    if (!accountId || !platform || !actionType) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+    
+    // Simulate adding account
+    alert(`Account added successfully!\n\nAccount ID: ${accountId}\nPlatform: ${platform}\nAction Type: ${actionType}\n\nMonitoring will begin immediately.`);
+    
+    // Close modal and reload
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addAccountModal'));
+    modal.hide();
+    form.reset();
+    
+    setTimeout(() => {
+        location.reload();
+    }, 500);
+}
+
+// Auto-refresh every 30 seconds
+setTimeout(() => {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-shield-alt me-2"></i>CAPTCHA Solver Service
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{{ url_for('infrastructure') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Infrastructure
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Success Rate
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ "%.1f%%" | format(stats.success_rate * 100) if stats.total_attempts > 0 else "0%" }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Solved
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.successful_solves }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Avg Solve Time
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ "%.1f" | format(stats.average_solve_time) }}s
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Cost
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ "%.3f" | format(stats.total_cost) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Solve CAPTCHA Form -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Solve CAPTCHA</h6>
+                </div>
+                <div class="card-body">
+                    <form id="captchaForm">
+                        <div class="mb-3">
+                            <label for="captcha_type" class="form-label">CAPTCHA Type</label>
+                            <select class="form-select" id="captcha_type" name="captcha_type" required>
+                                <option value="recaptcha_v2">reCAPTCHA v2</option>
+                                <option value="recaptcha_v3">reCAPTCHA v3</option>
+                                <option value="hcaptcha">hCaptcha</option>
+                                <option value="funcaptcha">FunCaptcha</option>
+                                <option value="geetest">GeeTest</option>
+                                <option value="image_captcha">Image CAPTCHA</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="site_key" class="form-label">Site Key</label>
+                            <input type="text" class="form-control" id="site_key" name="site_key" placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" required>
+                            <small class="form-text text-muted">The CAPTCHA site key from the target website</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="page_url" class="form-label">Page URL</label>
+                            <input type="url" class="form-control" id="page_url" name="page_url" placeholder="https://example.com/login" required>
+                            <small class="form-text text-muted">URL where the CAPTCHA appears</small>
+                        </div>
+
+                        <div class="mb-3" id="imageUploadSection" style="display: none;">
+                            <label for="captcha_image" class="form-label">CAPTCHA Image</label>
+                            <input type="file" class="form-control" id="captcha_image" name="captcha_image" accept="image/*">
+                            <small class="form-text text-muted">Upload the CAPTCHA image for solving</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-play"></i> Solve CAPTCHA
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-secondary w-100" onclick="clearForm()">
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="solveResult" class="mt-3" style="display: none;">
+                        <div class="alert" id="resultAlert"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Provider Status -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Provider Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Success Rate</th>
+                                    <th>Cost/Solve</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>2captcha</strong></td>
+                                    <td><span class="badge bg-success">92%</span></td>
+                                    <td>$0.003</td>
+                                    <td><span class="badge bg-success">Online</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Anti-Captcha</strong></td>
+                                    <td><span class="badge bg-success">89%</span></td>
+                                    <td>$0.0025</td>
+                                    <td><span class="badge bg-success">Online</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DeathByCaptcha</strong></td>
+                                    <td><span class="badge bg-warning">85%</span></td>
+                                    <td>$0.0039</td>
+                                    <td><span class="badge bg-success">Online</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Captcha Guru</strong></td>
+                                    <td><span class="badge bg-success">94%</span></td>
+                                    <td>$0.0028</td>
+                                    <td><span class="badge bg-success">Online</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="font-weight-bold">Provider Selection</h6>
+                        <p class="text-muted small">
+                            The system automatically selects the best provider based on success rate, cost, and current availability. 
+                            Captcha Guru is currently preferred for its high success rate.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Recent CAPTCHA Solves</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Provider</th>
+                            <th>Solve Time</th>
+                            <th>Cost</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentSolves">
+                        {% if recent_solves %}
+                            {% for solve in recent_solves %}
+                            <tr>
+                                <td>{{ solve.timestamp.strftime('%H:%M:%S') }}</td>
+                                <td>{{ solve.captcha_type }}</td>
+                                <td>{{ solve.provider }}</td>
+                                <td>{{ "%.1f" | format(solve.solve_time) }}s</td>
+                                <td>${{ "%.4f" | format(solve.cost) }}</td>
+                                <td>
+                                    {% if solve.success %}
+                                        <span class="badge bg-success">Success</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Failed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No recent CAPTCHA solves</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('captcha_type').addEventListener('change', function() {
+    const imageSection = document.getElementById('imageUploadSection');
+    if (this.value === 'image_captcha') {
+        imageSection.style.display = 'block';
+        document.getElementById('captcha_image').required = true;
+        document.getElementById('site_key').required = false;
+    } else {
+        imageSection.style.display = 'none';
+        document.getElementById('captcha_image').required = false;
+        document.getElementById('site_key').required = true;
+    }
+});
+
+document.getElementById('captchaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const resultDiv = document.getElementById('solveResult');
+    const alertDiv = document.getElementById('resultAlert');
+    
+    // Show loading state
+    alertDiv.className = 'alert alert-info';
+    alertDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Solving CAPTCHA... This may take 30-60 seconds.';
+    resultDiv.style.display = 'block';
+    
+    // Disable form during solve
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    
+    fetch('/infrastructure/captcha', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alertDiv.className = 'alert alert-success';
+            alertDiv.innerHTML = `
+                <strong>CAPTCHA Solved Successfully!</strong><br>
+                <strong>Provider:</strong> ${data.provider}<br>
+                <strong>Solve Time:</strong> ${data.solve_time.toFixed(1)} seconds<br>
+                <strong>Cost:</strong> $${data.cost.toFixed(4)}<br>
+                <strong>Solution:</strong> <code>${data.solution}</code>
+            `;
+            
+            // Add to recent solves table
+            addToRecentSolves(data);
+            
+        } else {
+            alertDiv.className = 'alert alert-danger';
+            alertDiv.innerHTML = `<strong>CAPTCHA Solve Failed:</strong> ${data.error}`;
+        }
+    })
+    .catch(error => {
+        alertDiv.className = 'alert alert-danger';
+        alertDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+    });
+});
+
+function clearForm() {
+    document.getElementById('captchaForm').reset();
+    document.getElementById('solveResult').style.display = 'none';
+    document.getElementById('imageUploadSection').style.display = 'none';
+    document.getElementById('site_key').required = true;
+}
+
+function addToRecentSolves(solveData) {
+    const tbody = document.getElementById('recentSolves');
+    const now = new Date();
+    const timeStr = now.toTimeString().substr(0, 8);
+    
+    // Remove "No recent solves" message if present
+    if (tbody.children.length === 1 && tbody.children[0].children.length === 1) {
+        tbody.innerHTML = '';
+    }
+    
+    const row = tbody.insertRow(0);
+    row.innerHTML = `
+        <td>${timeStr}</td>
+        <td>${document.getElementById('captcha_type').value}</td>
+        <td>${solveData.provider}</td>
+        <td>${solveData.solve_time.toFixed(1)}s</td>
+        <td>$${solveData.cost.toFixed(4)}</td>
+        <td><span class="badge bg-success">Success</span></td>
+    `;
+    
+    // Keep only last 10 rows
+    while (tbody.children.length > 10) {
+        tbody.removeChild(tbody.lastChild);
+    }
+}
+
+// Prefill demo values for testing
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('site_key').value = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+    document.getElementById('page_url').value = 'https://www.google.com/recaptcha/api2/demo';
+});
+</script>
+{% endblock %}

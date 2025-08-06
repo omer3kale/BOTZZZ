@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-cogs me-2"></i>Bot Infrastructure Services
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshStats()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                CAPTCHA Service
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ "%.1f%%" | format(stats.captcha_service.success_rate * 100) if stats.captcha_service.total_attempts > 0 else "N/A" }}
+                            </div>
+                            <small class="text-muted">Success Rate</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Rate Limits
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ stats.rate_limits.tracked_accounts }}
+                            </div>
+                            <small class="text-muted">Tracked Accounts</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tachometer-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Proxy Manager
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ stats.proxy_manager.active_proxies }}/{{ stats.proxy_manager.total_proxies }}
+                            </div>
+                            <small class="text-muted">Active Proxies</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-network-wired fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Account Warming
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ stats.account_warming.ready_accounts }}/{{ stats.account_warming.accounts_in_warming }}
+                            </div>
+                            <small class="text-muted">Ready Accounts</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-fire fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Services -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-shield-alt me-2"></i>CAPTCHA Solver Service
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Solve CAPTCHAs automatically using multiple provider networks with 90%+ success rates.</p>
+                    
+                    {% if stats.captcha_service.total_attempts > 0 %}
+                    <div class="row text-center">
+                        <div class="col">
+                            <strong>{{ stats.captcha_service.successful_solves }}</strong>
+                            <br><small class="text-muted">Solved</small>
+                        </div>
+                        <div class="col">
+                            <strong>${{ "%.3f" | format(stats.captcha_service.total_cost) }}</strong>
+                            <br><small class="text-muted">Total Cost</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ "%.1f" | format(stats.captcha_service.average_solve_time) }}s</strong>
+                            <br><small class="text-muted">Avg Time</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('captcha_service') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-cog"></i> Manage Service
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-tachometer-alt me-2"></i>Rate Limit Tracker
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Monitor and manage platform rate limits across YouTube, Instagram, TikTok, and Twitter.</p>
+                    
+                    <div class="row text-center">
+                        <div class="col">
+                            <strong>{{ stats.rate_limits.tracked_accounts }}</strong>
+                            <br><small class="text-muted">Accounts</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ stats.rate_limits.active_monitors }}</strong>
+                            <br><small class="text-muted">Active</small>
+                        </div>
+                        <div class="col">
+                            <strong>4</strong>
+                            <br><small class="text-muted">Platforms</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('rate_limit_service') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-chart-line"></i> View Limits
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-network-wired me-2"></i>Proxy Management
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Manage residential, datacenter, and mobile proxy pools with automatic rotation and health monitoring.</p>
+                    
+                    <div class="row text-center">
+                        <div class="col">
+                            <strong>{{ stats.proxy_manager.active_proxies }}</strong>
+                            <br><small class="text-muted">Active</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ "%.1f%" | format(stats.proxy_manager.detection_rate * 100) }}</strong>
+                            <br><small class="text-muted">Detection Rate</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ stats.proxy_manager.recent_rotations }}</strong>
+                            <br><small class="text-muted">Daily Rotations</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('proxy_service') }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-globe"></i> Manage Proxies
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-fire me-2"></i>Account Warming
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Automatically build account reputation through graduated activity patterns to avoid detection.</p>
+                    
+                    <div class="row text-center">
+                        <div class="col">
+                            <strong>{{ stats.account_warming.accounts_in_warming }}</strong>
+                            <br><small class="text-muted">Warming</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ stats.account_warming.ready_accounts }}</strong>
+                            <br><small class="text-muted">Ready</small>
+                        </div>
+                        <div class="col">
+                            <strong>5</strong>
+                            <br><small class="text-muted">Stages</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('account_warming_service') }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-thermometer-half"></i> View Warming
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Infrastructure Status -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Infrastructure Health Status</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Performance</th>
+                            <th>Cost (24h)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-shield-alt text-primary"></i> CAPTCHA Solver</td>
+                            <td><span class="badge bg-success">Online</span></td>
+                            <td>
+                                {% if stats.captcha_service.total_attempts > 0 %}
+                                    {{ "%.1f%" | format(stats.captcha_service.success_rate * 100) }} Success
+                                {% else %}
+                                    No recent activity
+                                {% endif %}
+                            </td>
+                            <td>${{ "%.2f" | format(stats.captcha_service.total_cost) if stats.captcha_service.total_cost else "0.00" }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="testCaptchaService()">
+                                    <i class="fas fa-play"></i> Test
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-tachometer-alt text-success"></i> Rate Limiter</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>{{ stats.rate_limits.tracked_accounts }} Accounts Monitored</td>
+                            <td>$0.00</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success" onclick="viewRateLimits()">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-network-wired text-info"></i> Proxy Manager</td>
+                            <td><span class="badge bg-success">Healthy</span></td>
+                            <td>{{ "%.1f%" | format(stats.proxy_manager.average_health * 100) }} Health</td>
+                            <td>~${{ "%.2f" | format(stats.proxy_manager.active_proxies * 0.10) }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-info" onclick="checkProxyHealth()">
+                                    <i class="fas fa-heartbeat"></i> Health Check
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-fire text-warning"></i> Account Warming</td>
+                            <td><span class="badge bg-success">Running</span></td>
+                            <td>{{ stats.account_warming.accounts_in_warming }} Accounts in Process</td>
+                            <td>$0.00</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-warning" onclick="executeWarmingCycle()">
+                                    <i class="fas fa-play-circle"></i> Execute Cycle
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshStats() {
+    location.reload();
+}
+
+function testCaptchaService() {
+    fetch('/infrastructure/captcha', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'captcha_type=recaptcha_v2&site_key=demo_key&page_url=https://example.com'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`CAPTCHA Test Successful!\nProvider: ${data.provider}\nSolve Time: ${data.solve_time.toFixed(1)}s`);
+        } else {
+            alert(`CAPTCHA Test Failed: ${data.error}`);
+        }
+    })
+    .catch(error => {
+        alert('Error testing CAPTCHA service: ' + error);
+    });
+}
+
+function viewRateLimits() {
+    window.location.href = '/infrastructure/rate-limits';
+}
+
+function checkProxyHealth() {
+    fetch('/api/infrastructure/proxies')
+    .then(response => response.json())
+    .then(data => {
+        alert(`Proxy Health Check:\nActive: ${data.active_proxies}/${data.total_proxies}\nAverage Health: ${(data.average_health * 100).toFixed(1)}%`);
+    })
+    .catch(error => {
+        alert('Error checking proxy health: ' + error);
+    });
+}
+
+function executeWarmingCycle() {
+    alert('Account warming cycles are executed automatically. Check the Account Warming page for details.');
+}
+
+// Auto-refresh every 30 seconds
+setTimeout(() => {
+    refreshStats();
+}, 30000);
+</script>
+{% endblock %}

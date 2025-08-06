@@ -16,6 +16,12 @@ import threading
 from functools import wraps
 import hashlib
 
+# Import bot infrastructure services
+from bot_infrastructure_services import (
+    captcha_solver, rate_limiter, proxy_manager, account_warmer, 
+    get_bot_infrastructure_stats
+)
+
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
@@ -590,21 +596,155 @@ def settings():
     """Admin settings page"""
     return render_template('settings.html')
 
+def get_active_simulations_count():
+    """Get count of active simulations"""
+    try:
+        conn = sqlite3.connect('botzzz_admin.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM simulation_runs WHERE status = 'running'")
+        count = cursor.fetchone()[0]
+        conn.close()
+        return count
+    except:
+        return 0
+
 @app.route('/api/system-status')
 @login_required
-def api_system_status():
-    """API endpoint for system status"""
-    status = {
+def system_status():
+    """API endpoint for real-time system status"""
+    return jsonify({
         'timestamp': datetime.now().isoformat(),
-        'status': 'healthy',
-        'version': '1.0.0',
-        'uptime': '5 days, 12 hours',
-        'active_simulations': 2,
-        'cpu_usage': 45.2,
-        'memory_usage': 62.1,
-        'disk_usage': 38.5
-    }
-    return jsonify(status)
+        'active_simulations': get_active_simulations_count(),
+        'system_health': 'healthy',
+        'bot_infrastructure': get_bot_infrastructure_stats()
+    })
+
+# Bot Infrastructure Service Routes
+@app.route('/infrastructure')
+@login_required
+def infrastructure_dashboard():
+    """Bot infrastructure services dashboard"""
+    stats = get_bot_infrastructure_stats()
+    return render_template('infrastructure.html', stats=stats)
+
+@app.route('/infrastructure/captcha', methods=['GET', 'POST'])
+@login_required
+def captcha_service():
+    """CAPTCHA solver service interface"""
+    if request.method == 'POST':
+        captcha_type = request.form.get('captcha_type')
+        site_key = request.form.get('site_key')
+        page_url = request.form.get('page_url')
+        provider = request.form.get('provider', 'auto')
+        
+        try:
+            result = captcha_solver.solve_captcha(captcha_type, site_key, page_url, provider)
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    
+    stats = captcha_solver.get_stats()
+    return render_template('captcha_service.html', stats=stats)
+
+@app.route('/infrastructure/rate-limits', methods=['GET', 'POST'])
+@login_required
+def rate_limit_service():
+    """Rate limit tracking service interface"""
+    if request.method == 'POST':
+        platform = request.form.get('platform')
+        account_id = request.form.get('account_id')
+        action = request.form.get('action')
+        
+        if not all([platform, account_id, action]):
+            return jsonify({'error': 'Missing required parameters'}), 400
+        
+        result = rate_limiter.check_rate_limit(platform, account_id, action)
+        return jsonify(result)
+    
+    # Get account statuses for display
+    account_statuses = {}
+    for account_id in list(rate_limiter.account_activity.keys())[:10]:  # Show top 10
+        account_statuses[account_id] = rate_limiter.get_account_status(account_id)
+    
+    return render_template('rate_limits.html', account_statuses=account_statuses)
+
+@app.route('/infrastructure/proxies', methods=['GET', 'POST'])
+@login_required
+def proxy_service():
+    """Proxy management service interface"""
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'get_proxy':
+            platform = request.form.get('platform')
+            region = request.form.get('region')
+            result = proxy_manager.get_optimal_proxy(platform, region)
+            return jsonify(result)
+        
+        elif action == 'rotate_proxy':
+            current_proxy_id = request.form.get('current_proxy_id')
+            reason = request.form.get('reason', 'manual_rotation')
+            result = proxy_manager.rotate_proxy(current_proxy_id, reason)
+            return jsonify(result)
+        
+        elif action == 'mark_detected':
+            proxy_id = request.form.get('proxy_id')
+            platform = request.form.get('platform')
+            detection_type = request.form.get('detection_type')
+            proxy_manager.mark_proxy_detected(proxy_id, platform, detection_type)
+            return jsonify({'success': True})
+    
+    stats = proxy_manager.get_proxy_statistics()
+    proxies = proxy_manager.active_proxies[:20]  # Show first 20 proxies
+    return render_template('proxy_service.html', stats=stats, proxies=proxies)
+
+@app.route('/infrastructure/warming', methods=['GET', 'POST'])
+@login_required
+def account_warming_service():
+    """Account warming service interface"""
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'start_warming':
+            account_id = request.form.get('account_id')
+            platform = request.form.get('platform')
+            target_stage = request.form.get('target_stage', 'stage_5_established')
+            
+            result = account_warmer.start_account_warming(account_id, platform, target_stage)
+            return jsonify(result)
+        
+        elif action == 'execute_daily':
+            account_id = request.form.get('account_id')
+            result = account_warmer.execute_daily_warming(account_id)
+            return jsonify(result)
+    
+    # Get warming account statuses
+    warming_statuses = {}
+    for account_id in account_warmer.warming_accounts.keys():
+        warming_statuses[account_id] = account_warmer.get_account_warming_status(account_id)
+    
+    return render_template('account_warming.html', warming_statuses=warming_statuses)
+
+@app.route('/api/infrastructure/<service>')
+@login_required
+def infrastructure_api(service):
+    """API endpoints for infrastructure services"""
+    if service == 'captcha':
+        return jsonify(captcha_solver.get_stats())
+    elif service == 'rate-limits':
+        account_id = request.args.get('account_id')
+        if account_id:
+            return jsonify(rate_limiter.get_account_status(account_id))
+        return jsonify({'error': 'account_id parameter required'})
+    elif service == 'proxies':
+        return jsonify(proxy_manager.get_proxy_statistics())
+    elif service == 'warming':
+        account_id = request.args.get('account_id')
+        if account_id:
+            return jsonify(account_warmer.get_account_warming_status(account_id))
+        return jsonify({'error': 'account_id parameter required'})
+    else:
+        return jsonify({'error': 'Unknown service'}), 404
 
 @app.route('/api/simulations/<int:simulation_id>/logs')
 @login_required
