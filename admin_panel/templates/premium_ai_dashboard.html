@@ -1,0 +1,759 @@
+{% extends "base.html" %}
+
+{% block title %}🧠 Premium AI Intelligence Engine{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-dashboard {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    
+    .ai-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    .ai-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .ai-metric-card {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .ai-metric-card:hover {
+        transform: scale(1.05);
+    }
+    
+    .ai-metric-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+    
+    .ai-metric-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .insight-card {
+        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .insight-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .insight-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .insight-description {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        opacity: 0.95;
+    }
+    
+    .insight-action {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .confidence-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .confidence-very-high {
+        background: #10B981;
+        color: white;
+    }
+    
+    .confidence-high {
+        background: #3B82F6;
+        color: white;
+    }
+    
+    .confidence-medium {
+        background: #F59E0B;
+        color: white;
+    }
+    
+    .confidence-low {
+        background: #EF4444;
+        color: white;
+    }
+    
+    .prediction-chart {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .optimization-card {
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .roi-indicator {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 6px 12px;
+        border-radius: 8px;
+        display: inline-block;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+    
+    .pattern-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+    
+    .pattern-high { background: #10B981; }
+    .pattern-medium { background: #F59E0B; }
+    .pattern-low { background: #EF4444; }
+    
+    .ai-brain-icon {
+        font-size: 2rem;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .model-performance {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .accuracy-bar {
+        width: 100px;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .accuracy-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10B981, #3B82F6);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+    
+    .real-time-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #10B981;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        margin-right: 8px;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.1); }
+    }
+    
+    .trend-arrow {
+        font-size: 1.2rem;
+        margin-left: 8px;
+    }
+    
+    .trend-up { color: #10B981; }
+    .trend-down { color: #EF4444; }
+    .trend-stable { color: #6B7280; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-dashboard">
+    <div class="container-fluid">
+        <!-- AI Dashboard Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="ai-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="mb-2">
+                                <i class="ai-brain-icon">🧠</i>
+                                Premium AI Intelligence Engine
+                                <span class="real-time-indicator"></span>
+                            </h1>
+                            <p class="text-muted mb-0">Advanced AI-Powered Analytics & Decision Engine</p>
+                        </div>
+                        <div class="text-end">
+                            <button class="btn btn-primary me-2" onclick="generateInsights()">
+                                <i class="fas fa-lightbulb me-2"></i>Generate Insights
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="runAnalysis()">
+                                <i class="fas fa-chart-line me-2"></i>Run Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Metrics Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="ai-metric-card">
+                    <div class="ai-metric-value" id="active-models">4</div>
+                    <div class="ai-metric-label">
+                        <i class="fas fa-brain me-1"></i>Active AI Models
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="ai-metric-card">
+                    <div class="ai-metric-value" id="predictions-made">127</div>
+                    <div class="ai-metric-label">
+                        <i class="fas fa-crystal-ball me-1"></i>Predictions Made
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="ai-metric-card">
+                    <div class="ai-metric-value" id="insights-generated">23</div>
+                    <div class="ai-metric-label">
+                        <i class="fas fa-lightbulb me-1"></i>Insights Generated
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="ai-metric-card">
+                    <div class="ai-metric-value" id="ai-accuracy">94%</div>
+                    <div class="ai-metric-label">
+                        <i class="fas fa-bullseye me-1"></i>Average Accuracy
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- AI Insights Panel -->
+            <div class="col-lg-8">
+                <div class="ai-card">
+                    <h3 class="mb-4">
+                        <i class="fas fa-lightbulb me-2"></i>AI-Generated Insights
+                        <small class="text-muted">(Real-time Analysis)</small>
+                    </h3>
+                    
+                    <div id="ai-insights">
+                        <!-- Sample insights - will be populated by JavaScript -->
+                        <div class="insight-card">
+                            <div class="insight-title">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Engagement Rate Optimization Opportunity
+                                <span class="confidence-badge confidence-high ms-auto">High Confidence</span>
+                            </div>
+                            <div class="insight-description">
+                                AI analysis detected 23% improvement potential in engagement rates by adjusting posting schedule to peak audience activity hours (6-8 PM).
+                            </div>
+                            <div class="insight-action">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                Recommended Action: Shift 60% of posts to 6-8 PM time window
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <small>Impact Score: 85.5/100</small>
+                                <small>Based on 15,432 data points</small>
+                            </div>
+                        </div>
+                        
+                        <div class="insight-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            <div class="insight-title">
+                                <i class="fas fa-users me-2"></i>
+                                Emerging Audience Segment Detected
+                                <span class="confidence-badge confidence-very-high ms-auto">Very High Confidence</span>
+                            </div>
+                            <div class="insight-description">
+                                Machine learning identified a high-value audience segment (25-34 tech professionals) with 3x higher conversion rates.
+                            </div>
+                            <div class="insight-action">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                Recommended Action: Create targeted campaigns for tech professional demographic
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <small>Impact Score: 92.3/100</small>
+                                <small>Based on 28,766 data points</small>
+                            </div>
+                        </div>
+                        
+                        <div class="insight-card" style="background: linear-gradient(135deg, #11998e, #38ef7d);">
+                            <div class="insight-title">
+                                <i class="fas fa-video me-2"></i>
+                                Content Performance Pattern Recognition
+                                <span class="confidence-badge confidence-high ms-auto">High Confidence</span>
+                            </div>
+                            <div class="insight-description">
+                                AI discovered video content generates 45% more engagement than images, with carousel posts showing highest retention.
+                            </div>
+                            <div class="insight-action">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                Recommended Action: Increase video content ratio to 70% and prioritize carousel formats
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <small>Impact Score: 78.9/100</small>
+                                <small>Based on 42,891 data points</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-outline-primary" onclick="loadMoreInsights()">
+                            <i class="fas fa-plus me-2"></i>Load More Insights
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Predictive Analytics -->
+                <div class="ai-card mt-4">
+                    <h3 class="mb-4">
+                        <i class="fas fa-crystal-ball me-2"></i>Predictive Analytics
+                        <small class="text-muted">(30-day Forecast)</small>
+                    </h3>
+                    
+                    <div class="prediction-chart">
+                        <canvas id="predictionChart" width="400" height="200"></canvas>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <h5 class="text-primary">Engagement Forecast</h5>
+                                <div class="h3">+18.5%</div>
+                                <small class="text-muted">Expected growth</small>
+                                <div class="confidence-badge confidence-high mt-2">High Confidence</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <h5 class="text-success">Revenue Prediction</h5>
+                                <div class="h3">$47.2K</div>
+                                <small class="text-muted">Projected monthly</small>
+                                <div class="confidence-badge confidence-very-high mt-2">Very High Confidence</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3">
+                                <h5 class="text-info">Audience Growth</h5>
+                                <div class="h3">+2.3K</div>
+                                <small class="text-muted">New followers</small>
+                                <div class="confidence-badge confidence-medium mt-2">Medium Confidence</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Control Panel -->
+            <div class="col-lg-4">
+                <!-- Model Performance -->
+                <div class="ai-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-cogs me-2"></i>AI Model Performance
+                    </h4>
+                    
+                    <div class="model-performance">
+                        <div>
+                            <strong>Engagement Forecaster</strong>
+                            <br><small class="text-muted">Predictive Analytics</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 94%;"></div>
+                            </div>
+                            <small>94% accuracy</small>
+                        </div>
+                    </div>
+                    
+                    <div class="model-performance">
+                        <div>
+                            <strong>Campaign Optimizer</strong>
+                            <br><small class="text-muted">Optimization Engine</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 89%;"></div>
+                            </div>
+                            <small>89% accuracy</small>
+                        </div>
+                    </div>
+                    
+                    <div class="model-performance">
+                        <div>
+                            <strong>Anomaly Detector</strong>
+                            <br><small class="text-muted">Pattern Recognition</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 96%;"></div>
+                            </div>
+                            <small>96% accuracy</small>
+                        </div>
+                    </div>
+                    
+                    <div class="model-performance">
+                        <div>
+                            <strong>Trend Analyzer</strong>
+                            <br><small class="text-muted">Trend Analysis</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="accuracy-bar">
+                                <div class="accuracy-fill" style="width: 87%;"></div>
+                            </div>
+                            <small>87% accuracy</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Optimization Recommendations -->
+                <div class="ai-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-magic me-2"></i>AI Optimization
+                    </h4>
+                    
+                    <div class="optimization-card">
+                        <h6><i class="fas fa-dollar-sign me-2"></i>Budget Allocation</h6>
+                        <p class="small mb-2">AI recommends increasing high-performing segment budget by 24%</p>
+                        <div class="roi-indicator">
+                            Expected ROI: +175%
+                        </div>
+                    </div>
+                    
+                    <div class="optimization-card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <h6><i class="fas fa-clock me-2"></i>Posting Schedule</h6>
+                        <p class="small mb-2">Reduce frequency but increase quality for 35% better engagement</p>
+                        <div class="roi-indicator">
+                            Expected ROI: +215%
+                        </div>
+                    </div>
+                    
+                    <div class="optimization-card" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">
+                        <h6><i class="fas fa-target me-2"></i>Targeting Parameters</h6>
+                        <p class="small mb-2">Narrow targeting to high-conversion demographics</p>
+                        <div class="roi-indicator">
+                            Expected ROI: +195%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pattern Detection -->
+                <div class="ai-card">
+                    <h4 class="mb-3">
+                        <i class="fas fa-search me-2"></i>Pattern Detection
+                    </h4>
+                    
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <span class="pattern-indicator pattern-high"></span>
+                            <strong>Peak Engagement Hours</strong>
+                            <br><small class="text-muted">7-9 PM daily</small>
+                        </div>
+                        <span class="confidence-badge confidence-high">92%</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <span class="pattern-indicator pattern-high"></span>
+                            <strong>Mobile Traffic Surge</strong>
+                            <br><small class="text-muted">Lunch hours (12-2 PM)</small>
+                        </div>
+                        <span class="confidence-badge confidence-very-high">95%</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <span class="pattern-indicator pattern-medium"></span>
+                            <strong>Content Preferences</strong>
+                            <br><small class="text-muted">Video > Carousel > Image</small>
+                        </div>
+                        <span class="confidence-badge confidence-high">89%</span>
+                    </div>
+                    
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="pattern-indicator pattern-high"></span>
+                            <strong>Seasonal Trends</strong>
+                            <br><small class="text-muted">Summer +15% engagement</small>
+                        </div>
+                        <span class="confidence-badge confidence-medium">83%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Insights Modal -->
+<div class="modal fade" id="aiInsightModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-brain me-2"></i>Detailed AI Analysis
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-insight-content">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Apply Recommendation</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Real-time AI data updates
+    let aiMetrics = {
+        activeModels: 4,
+        predictionsMade: 127,
+        insightsGenerated: 23,
+        averageAccuracy: 94
+    };
+    
+    // Initialize prediction chart
+    function initPredictionChart() {
+        const ctx = document.getElementById('predictionChart').getContext('2d');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 7', 'Day 14', 'Day 21', 'Day 30'],
+                datasets: [{
+                    label: 'Predicted Engagement',
+                    data: [12000, 14200, 16800, 19500, 22300],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Confidence Interval',
+                    data: [11000, 13000, 15500, 18000, 20500],
+                    borderColor: '#764ba2',
+                    borderDash: [5, 5],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'AI-Powered Engagement Predictions'
+                    },
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Engagement Count'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Generate new AI insights
+    function generateInsights() {
+        const button = event.target;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+        button.disabled = true;
+        
+        // Simulate AI processing
+        setTimeout(() => {
+            fetch('/api/ai/insights')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateInsightsDisplay(data.insights);
+                        updateMetrics();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error generating insights:', error);
+                })
+                .finally(() => {
+                    button.innerHTML = '<i class="fas fa-lightbulb me-2"></i>Generate Insights';
+                    button.disabled = false;
+                });
+        }, 2000);
+    }
+    
+    // Run comprehensive AI analysis
+    function runAnalysis() {
+        const button = event.target;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+        button.disabled = true;
+        
+        setTimeout(() => {
+            fetch('/api/ai/analysis')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('AI Analysis completed:', data);
+                        // Update dashboard with analysis results
+                        updateAnalysisResults(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error running analysis:', error);
+                })
+                .finally(() => {
+                    button.innerHTML = '<i class="fas fa-chart-line me-2"></i>Run Analysis';
+                    button.disabled = false;
+                });
+        }, 3000);
+    }
+    
+    // Update metrics display
+    function updateMetrics() {
+        document.getElementById('active-models').textContent = aiMetrics.activeModels;
+        document.getElementById('predictions-made').textContent = aiMetrics.predictionsMade;
+        document.getElementById('insights-generated').textContent = ++aiMetrics.insightsGenerated;
+        document.getElementById('ai-accuracy').textContent = aiMetrics.averageAccuracy + '%';
+    }
+    
+    // Update insights display
+    function updateInsightsDisplay(insights) {
+        const container = document.getElementById('ai-insights');
+        // Add new insights to the top
+        insights.forEach(insight => {
+            const insightElement = createInsightElement(insight);
+            container.insertBefore(insightElement, container.firstChild);
+        });
+    }
+    
+    // Create insight element
+    function createInsightElement(insight) {
+        const div = document.createElement('div');
+        div.className = 'insight-card';
+        div.innerHTML = `
+            <div class="insight-title">
+                <i class="fas fa-lightbulb me-2"></i>
+                ${insight.title}
+                <span class="confidence-badge confidence-${insight.confidence} ms-auto">${insight.confidence} Confidence</span>
+            </div>
+            <div class="insight-description">
+                ${insight.description}
+            </div>
+            <div class="insight-action">
+                <i class="fas fa-arrow-right me-2"></i>
+                ${insight.recommended_action}
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <small>Impact Score: ${insight.impact_score}/100</small>
+                <small>Based on ${insight.data_points.toLocaleString()} data points</small>
+            </div>
+        `;
+        return div;
+    }
+    
+    // Load more insights
+    function loadMoreInsights() {
+        const button = event.target;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+        button.disabled = true;
+        
+        setTimeout(() => {
+            // Simulate loading more insights
+            button.innerHTML = '<i class="fas fa-plus me-2"></i>Load More Insights';
+            button.disabled = false;
+        }, 1500);
+    }
+    
+    // Real-time updates
+    function startRealTimeUpdates() {
+        setInterval(() => {
+            // Simulate real-time metric updates
+            if (Math.random() < 0.3) { // 30% chance
+                aiMetrics.predictionsMade += Math.floor(Math.random() * 3) + 1;
+                aiMetrics.averageAccuracy = Math.min(99, aiMetrics.averageAccuracy + (Math.random() - 0.5) * 0.5);
+                updateMetrics();
+            }
+        }, 5000);
+    }
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        initPredictionChart();
+        startRealTimeUpdates();
+        
+        // Add click handlers for insight cards
+        document.querySelectorAll('.insight-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Show detailed insight modal
+                $('#aiInsightModal').modal('show');
+            });
+        });
+    });
+</script>
+{% endblock %}

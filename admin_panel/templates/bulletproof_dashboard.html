@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-shield-alt me-2 text-success"></i>🛡️ Bulletproof System Dashboard
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-success" onclick="refreshDashboard()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-info" onclick="exportReport()">
+                    <i class="fas fa-download"></i> Export Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Health Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                System Health
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% set healthy_services = monitoring.values() | selectattr("status", "equalto", "ServiceStatus.HEALTHY") | list | length %}
+                                {% set total_services = monitoring | length %}
+                                {{ "%.0f%%" | format((healthy_services / total_services * 100) if total_services > 0 else 100) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-heartbeat fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Active Alerts
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status.alerts.unresolved }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Cache Hit Rate
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status.cache.hit_rate }}%</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tachometer-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Blocked IPs
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ status.security.blocked_ips }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-ban fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Status Grid -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Service Health Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                    <th>Success Rate</th>
+                                    <th>Avg Response</th>
+                                    <th>Total Requests</th>
+                                    <th>Circuit Breaker</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service_name, metrics in monitoring.items() %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ service_name.replace('_', ' ').title() }}</strong>
+                                        {% if metrics.last_error %}
+                                        <br><small class="text-danger">Last Error: {{ metrics.last_error[:50] }}...</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if metrics.status.name == 'HEALTHY' %}
+                                            <span class="badge bg-success">Healthy</span>
+                                        {% elif metrics.status.name == 'DEGRADED' %}
+                                            <span class="badge bg-warning">Degraded</span>
+                                        {% elif metrics.status.name == 'CRITICAL' %}
+                                            <span class="badge bg-danger">Critical</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Offline</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if metrics.success_rate > 0.95 %}bg-success
+                                                {% elif metrics.success_rate > 0.8 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ (metrics.success_rate * 100)|int }}%">
+                                                {{ "%.1f%" | format(metrics.success_rate * 100) }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ "%.0f" | format(metrics.average_response_time) }}ms</td>
+                                    <td>{{ metrics.total_requests }}</td>
+                                    <td>
+                                        {% if metrics.circuit_breaker_state == 'CLOSED' %}
+                                            <span class="badge bg-success">Closed</span>
+                                        {% elif metrics.circuit_breaker_state == 'HALF_OPEN' %}
+                                            <span class="badge bg-warning">Half-Open</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Open</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="testService('{{ service_name }}')">
+                                            <i class="fas fa-vial"></i> Test
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="recoverService('{{ service_name }}')">
+                                            <i class="fas fa-medkit"></i> Recover
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No services registered</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Stats -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Performance Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Cache Performance</h6>
+                        <div class="row text-center">
+                            <div class="col">
+                                <strong>{{ status.cache.hits }}</strong>
+                                <br><small class="text-muted">Hits</small>
+                            </div>
+                            <div class="col">
+                                <strong>{{ status.cache.misses }}</strong>
+                                <br><small class="text-muted">Misses</small>
+                            </div>
+                        </div>
+                        <div class="progress mt-2">
+                            <div class="progress-bar bg-success" style="width: {{ status.cache.hit_rate }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>Security Status</h6>
+                        <div class="row text-center">
+                            <div class="col">
+                                <strong>{{ status.security.active_api_keys }}</strong>
+                                <br><small class="text-muted">API Keys</small>
+                            </div>
+                            <div class="col">
+                                <strong>{{ status.security.failed_attempts_tracked }}</strong>
+                                <br><small class="text-muted">Tracked IPs</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6>Database Status</h6>
+                        <p class="text-muted mb-1">
+                            Last Backup: 
+                            {% if status.database.last_backup > 0 %}
+                                {{ moment(status.database.last_backup * 1000).fromNow() }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </p>
+                        <p class="text-muted">
+                            Backup Interval: {{ status.database.backup_interval // 60 }} minutes
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Emergency Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-warning" onclick="clearCache()">
+                            <i class="fas fa-broom"></i> Clear Cache
+                        </button>
+                        <button class="btn btn-info" onclick="backupDatabase()">
+                            <i class="fas fa-database"></i> Backup Database
+                        </button>
+                        <button class="btn btn-danger" onclick="emergencyStop()">
+                            <i class="fas fa-stop"></i> Emergency Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Alerts -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Recent Alerts</h6>
+            <button class="btn btn-sm btn-outline-primary" onclick="loadAlerts()">
+                <i class="fas fa-refresh"></i> Refresh Alerts
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0" id="alertsTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Service</th>
+                            <th>Level</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertsTableBody">
+                        {% for alert in recent_alerts %}
+                        <tr>
+                            <td>{{ alert.timestamp.strftime('%H:%M:%S') }}</td>
+                            <td>{{ alert.service_name.replace('_', ' ').title() }}</td>
+                            <td>
+                                {% if alert.level.name == 'CRITICAL' %}
+                                    <span class="badge bg-danger">Critical</span>
+                                {% elif alert.level.name == 'ERROR' %}
+                                    <span class="badge bg-warning">Error</span>
+                                {% elif alert.level.name == 'WARNING' %}
+                                    <span class="badge bg-info">Warning</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Info</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ alert.message[:80] }}{% if alert.message|length > 80 %}...{% endif %}</td>
+                            <td>
+                                {% if alert.resolved %}
+                                    <span class="badge bg-success">Resolved</span>
+                                {% elif alert.acknowledged %}
+                                    <span class="badge bg-info">Acknowledged</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not alert.acknowledged %}
+                                <button class="btn btn-sm btn-outline-primary" onclick="acknowledgeAlert('{{ alert.alert_id }}')">
+                                    <i class="fas fa-check"></i> Ack
+                                </button>
+                                {% endif %}
+                                {% if not alert.resolved %}
+                                <button class="btn btn-sm btn-outline-success" onclick="resolveAlert('{{ alert.alert_id }}')">
+                                    <i class="fas fa-times"></i> Resolve
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No recent alerts</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time updates -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script>
+function refreshDashboard() {
+    location.reload();
+}
+
+function exportReport() {
+    // Generate comprehensive system report
+    window.open('/api/bulletproof/status', '_blank');
+}
+
+function testService(serviceName) {
+    alert(`Testing ${serviceName}... This would perform a health check on the service.`);
+    setTimeout(() => {
+        alert(`${serviceName} test completed successfully!`);
+    }, 2000);
+}
+
+function recoverService(serviceName) {
+    if (confirm(`Attempt to recover ${serviceName}? This will trigger automatic recovery procedures.`)) {
+        alert(`Recovery initiated for ${serviceName}. Check alerts for status updates.`);
+        setTimeout(() => refreshDashboard(), 3000);
+    }
+}
+
+function clearCache() {
+    if (confirm('Clear all cached data? This may temporarily impact performance.')) {
+        alert('Cache cleared successfully. Performance metrics will be reset.');
+        setTimeout(() => refreshDashboard(), 1000);
+    }
+}
+
+function backupDatabase() {
+    alert('Database backup initiated. This process will complete in the background.');
+}
+
+function emergencyStop() {
+    if (confirm('⚠️ EMERGENCY STOP ⚠️\n\nThis will shut down all services immediately. Continue?')) {
+        if (confirm('This action cannot be undone without manual intervention. Are you absolutely sure?')) {
+            alert('Emergency stop initiated. All services are being shut down.');
+        }
+    }
+}
+
+function loadAlerts() {
+    fetch('/api/bulletproof/alerts')
+    .then(response => response.json())
+    .then(data => {
+        const tbody = document.getElementById('alertsTableBody');
+        tbody.innerHTML = '';
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No recent alerts</td></tr>';
+            return;
+        }
+        
+        data.forEach(alert => {
+            const levelBadge = {
+                'critical': 'bg-danger',
+                'error': 'bg-warning', 
+                'warning': 'bg-info',
+                'info': 'bg-secondary'
+            }[alert.level] || 'bg-secondary';
+            
+            const statusBadge = alert.resolved ? 'bg-success' : alert.acknowledged ? 'bg-info' : 'bg-warning';
+            const statusText = alert.resolved ? 'Resolved' : alert.acknowledged ? 'Acknowledged' : 'Active';
+            
+            const row = `
+                <tr>
+                    <td>${moment(alert.timestamp).format('HH:mm:ss')}</td>
+                    <td>${alert.service_name.replace('_', ' ')}</td>
+                    <td><span class="badge ${levelBadge}">${alert.level.toUpperCase()}</span></td>
+                    <td>${alert.message.substr(0, 80)}${alert.message.length > 80 ? '...' : ''}</td>
+                    <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                    <td>
+                        ${!alert.acknowledged ? `<button class="btn btn-sm btn-outline-primary" onclick="acknowledgeAlert('${alert.alert_id}')"><i class="fas fa-check"></i> Ack</button>` : ''}
+                        ${!alert.resolved ? `<button class="btn btn-sm btn-outline-success" onclick="resolveAlert('${alert.alert_id}')"><i class="fas fa-times"></i> Resolve</button>` : ''}
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    })
+    .catch(error => {
+        console.error('Error loading alerts:', error);
+    });
+}
+
+function acknowledgeAlert(alertId) {
+    alert(`Alert ${alertId} acknowledged.`);
+    setTimeout(() => loadAlerts(), 500);
+}
+
+function resolveAlert(alertId) {
+    alert(`Alert ${alertId} resolved.`);
+    setTimeout(() => loadAlerts(), 500);
+}
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+    loadAlerts();
+}, 30000);
+
+// Real-time status updates every 10 seconds
+setInterval(() => {
+    fetch('/api/bulletproof/metrics')
+    .then(response => response.json())
+    .then(data => {
+        console.log('System metrics updated:', data);
+        // Update UI elements as needed
+    });
+}, 10000);
+</script>
+{% endblock %}

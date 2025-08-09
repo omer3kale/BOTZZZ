@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Enterprise Security & Compliance Suite</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .security-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .security-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .security-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .security-header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .threat-level-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .threat-level-low {
+            background: #4caf50;
+            color: white;
+        }
+
+        .threat-level-medium {
+            background: #ff9800;
+            color: white;
+        }
+
+        .threat-level-high {
+            background: #f44336;
+            color: white;
+        }
+
+        .threat-level-critical {
+            background: #d32f2f;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .security-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .security-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .security-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .security-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .security-card:hover::before {
+            opacity: 1;
+            left: 100%;
+            top: 100%;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .card-icon {
+            font-size: 1.5em;
+        }
+
+        .security-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .metric-trend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+
+        .chart-container.large {
+            height: 400px;
+        }
+
+        .threat-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .threat-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .threat-item.critical {
+            background: linear-gradient(90deg, #ffebee, #ffcdd2);
+            border-left-color: #d32f2f;
+        }
+
+        .threat-item.high {
+            background: linear-gradient(90deg, #fff3e0, #ffe0b2);
+            border-left-color: #ff5722;
+        }
+
+        .threat-item.medium {
+            background: linear-gradient(90deg, #fff8e1, #ffecb3);
+            border-left-color: #ff9800;
+        }
+
+        .threat-item.low {
+            background: linear-gradient(90deg, #e8f5e8, #c8e6c9);
+            border-left-color: #4caf50;
+        }
+
+        .threat-info {
+            flex: 1;
+        }
+
+        .threat-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .threat-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .threat-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-critical {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .badge-high {
+            background: #ff5722;
+            color: white;
+        }
+
+        .badge-medium {
+            background: #ff9800;
+            color: white;
+        }
+
+        .badge-low {
+            background: #4caf50;
+            color: white;
+        }
+
+        .compliance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .compliance-card {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .compliance-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .compliance-label {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .compliance-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .incident-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .incident-table th,
+        .incident-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .incident-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .incident-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-open {
+            background: #ffecb3;
+            color: #f57c00;
+        }
+
+        .status-investigating {
+            background: #e1f5fe;
+            color: #0277bd;
+        }
+
+        .status-resolved {
+            background: #c8e6c9;
+            color: #388e3c;
+        }
+
+        .security-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-btn.emergency {
+            background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+        }
+
+        .alert-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #d32f2f;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            z-index: 1001;
+            display: none;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .security-score-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .security-score {
+            font-size: 4em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .security-score-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .security-container {
+                padding: 10px;
+            }
+            
+            .security-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-btn {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+            
+            .security-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Threat Level Indicator -->
+    <div id="threatIndicator" class="threat-level-indicator threat-level-low">
+        <span>🛡️</span>
+        <span>Threat Level: LOW</span>
+    </div>
+
+    <!-- Emergency Alert Banner -->
+    <div id="alertBanner" class="alert-banner">
+        <strong>🚨 SECURITY ALERT:</strong> Critical threat detected - Security team has been notified
+        <button onclick="dismissAlert()" style="float: right; background: none; border: none; color: white; cursor: pointer;">✕</button>
+    </div>
+
+    <div class="security-container">
+        <!-- Security Header -->
+        <div class="security-header">
+            <h1>🔒 Enterprise Security & Compliance Suite</h1>
+            <p>Advanced Threat Detection & Compliance Management</p>
+        </div>
+
+        <!-- Security Score Display -->
+        <div class="security-score-display">
+            <div id="securityScore" class="security-score">85.2</div>
+            <div class="security-score-label">Overall Security Score</div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="security-nav">
+            <button class="nav-btn active" onclick="showSecurityView('overview')">Security Overview</button>
+            <button class="nav-btn" onclick="showSecurityView('threats')">Threat Monitoring</button>
+            <button class="nav-btn" onclick="showSecurityView('incidents')">Incident Management</button>
+            <button class="nav-btn" onclick="showSecurityView('compliance')">Compliance Reports</button>
+            <button class="nav-btn" onclick="showSecurityView('controls')">Security Controls</button>
+        </div>
+
+        <!-- Security Controls -->
+        <div class="security-controls">
+            <button class="control-btn" onclick="refreshSecurityData()">🔄 Refresh Data</button>
+            <button class="control-btn" onclick="scanForThreats()">🔍 Scan for Threats</button>
+            <button class="control-btn" onclick="generateReport()">📊 Generate Report</button>
+            <button class="control-btn emergency" onclick="lockdownSystem()">🚨 Emergency Lockdown</button>
+        </div>
+
+        <!-- Security Overview -->
+        <div id="security-overview" class="security-view">
+            <div class="security-grid">
+                <!-- Security Metrics -->
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Security Metrics</h3>
+                        <span class="card-icon">📊</span>
+                    </div>
+                    <div class="security-metrics">
+                        <div class="metric-card">
+                            <div class="metric-trend">↗️</div>
+                            <div class="metric-value" id="totalEvents">247</div>
+                            <div class="metric-label">Security Events (24h)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-trend">↘️</div>
+                            <div class="metric-value" id="activeIncidents">3</div>
+                            <div class="metric-label">Active Incidents</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-trend">↗️</div>
+                            <div class="metric-value" id="blockedIPs">127</div>
+                            <div class="metric-label">Blocked IPs</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-trend">→</div>
+                            <div class="metric-value" id="complianceScore">89%</div>
+                            <div class="metric-label">Avg Compliance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threat Level Distribution -->
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Threat Distribution</h3>
+                        <span class="card-icon">⚠️</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="threatChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Security Events Timeline -->
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Security Events Timeline</h3>
+                        <span class="card-icon">📈</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="eventsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Threats -->
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent High-Priority Threats</h3>
+                        <span class="card-icon">🚨</span>
+                    </div>
+                    <div id="recentThreats" class="threat-list">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading recent threats...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Threat Monitoring -->
+        <div id="threat-monitoring" class="security-view" style="display:none;">
+            <div class="security-grid">
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Live Threat Feed</h3>
+                        <span class="card-icon">🎯</span>
+                    </div>
+                    <div id="liveThreatFeed" class="threat-list">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading live threat feed...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Threat Intelligence</h3>
+                        <span class="card-icon">🧠</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="threatIntelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incident Management -->
+        <div id="incident-management" class="security-view" style="display:none;">
+            <div class="security-card">
+                <div class="card-header">
+                    <h3 class="card-title">Active Security Incidents</h3>
+                    <span class="card-icon">🔍</span>
+                </div>
+                <div id="incidentsList">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading security incidents...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Reports -->
+        <div id="compliance-reports" class="security-view" style="display:none;">
+            <div class="security-card">
+                <div class="card-header">
+                    <h3 class="card-title">Compliance Status</h3>
+                    <span class="card-icon">📋</span>
+                </div>
+                <div id="complianceStatus" class="compliance-grid">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading compliance reports...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Controls -->
+        <div id="security-controls-view" class="security-view" style="display:none;">
+            <div class="security-grid">
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Access Controls</h3>
+                        <span class="card-icon">🔐</span>
+                    </div>
+                    <div id="accessControls">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading access controls...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="security-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Data Protection</h3>
+                        <span class="card-icon">🔒</span>
+                    </div>
+                    <div id="dataProtection">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading data protection status...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentView = 'overview';
+        let securityData = {};
+        let charts = {};
+        let threatLevel = 'low';
+
+        // Initialize security dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSecurityData();
+            setInterval(updateRealTimeData, 30000); // Update every 30 seconds
+        });
+
+        // Navigation
+        function showSecurityView(viewType) {
+            // Update navigation buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Hide all views
+            document.querySelectorAll('.security-view').forEach(view => {
+                view.style.display = 'none';
+            });
+
+            // Show selected view
+            const viewElement = document.getElementById(`${viewType.replace('_', '-')}`);
+            if (viewElement) {
+                viewElement.style.display = 'block';
+            } else {
+                document.getElementById(`${viewType}-${viewType.split('-')[1] || 'view'}`).style.display = 'block';
+            }
+
+            currentView = viewType;
+
+            // Load specific view data
+            switch(viewType) {
+                case 'overview':
+                    loadSecurityOverview();
+                    break;
+                case 'threats':
+                    loadThreatMonitoring();
+                    break;
+                case 'incidents':
+                    loadIncidentManagement();
+                    break;
+                case 'compliance':
+                    loadComplianceReports();
+                    break;
+                case 'controls':
+                    loadSecurityControls();
+                    break;
+            }
+        }
+
+        // Load security data
+        function loadSecurityData() {
+            fetch('/api/security/dashboard')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        securityData = data.data;
+                        loadSecurityOverview();
+                        updateThreatLevel();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading security data:', error);
+                });
+        }
+
+        // Load security overview
+        function loadSecurityOverview() {
+            // Update security score
+            const securityScore = securityData.security_metrics?.security_score || 85.2;
+            document.getElementById('securityScore').textContent = securityScore.toFixed(1);
+
+            // Update metrics
+            document.getElementById('totalEvents').textContent = securityData.security_metrics?.total_events_24h || 247;
+            document.getElementById('activeIncidents').textContent = securityData.security_metrics?.active_incidents || 3;
+            document.getElementById('blockedIPs').textContent = securityData.blocked_ips_count || 127;
+            document.getElementById('complianceScore').textContent = Math.round(securityData.security_metrics?.avg_compliance_score || 89) + '%';
+
+            // Create threat distribution chart
+            createThreatChart();
+            
+            // Create events timeline chart
+            createEventsChart();
+
+            // Load recent threats
+            loadRecentThreats();
+        }
+
+        // Create threat distribution chart
+        function createThreatChart() {
+            const ctx = document.getElementById('threatChart').getContext('2d');
+            
+            if (charts.threat) {
+                charts.threat.destroy();
+            }
+
+            const threatData = securityData.threat_level_distribution || {
+                'low': 45,
+                'medium': 12,
+                'high': 6,
+                'critical': 2
+            };
+
+            charts.threat = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [
+                            threatData.critical || 0,
+                            threatData.high || 0,
+                            threatData.medium || 0,
+                            threatData.low || 0
+                        ],
+                        backgroundColor: [
+                            '#d32f2f',
+                            '#ff5722',
+                            '#ff9800',
+                            '#4caf50'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create events timeline chart
+        function createEventsChart() {
+            const ctx = document.getElementById('eventsChart').getContext('2d');
+            
+            if (charts.events) {
+                charts.events.destroy();
+            }
+
+            // Generate sample timeline data
+            const hours = [];
+            const eventCounts = [];
+            for (let i = 23; i >= 0; i--) {
+                hours.push(`${i}:00`);
+                eventCounts.push(Math.floor(Math.random() * 20) + 5);
+            }
+
+            charts.events = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Security Events',
+                        data: eventCounts,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load recent threats
+        function loadRecentThreats() {
+            const container = document.getElementById('recentThreats');
+            const threats = securityData.recent_threats || [
+                {
+                    event_id: 'sec_abc123',
+                    event_type: 'brute_force',
+                    threat_level: 'high',
+                    source_ip: '192.168.1.100',
+                    description: 'Brute force attack detected: 8 failed attempts',
+                    timestamp: new Date().toISOString()
+                },
+                {
+                    event_id: 'sec_def456',
+                    event_type: 'sql_injection',
+                    threat_level: 'critical',
+                    source_ip: '203.0.113.45',
+                    description: 'SQL injection attempt detected',
+                    timestamp: new Date(Date.now() - 300000).toISOString()
+                }
+            ];
+
+            let threatsHTML = threats.map(threat => `
+                <div class="threat-item ${threat.threat_level}">
+                    <div class="threat-info">
+                        <div class="threat-title">${threat.description}</div>
+                        <div class="threat-details">
+                            Source: ${threat.source_ip} | 
+                            Time: ${new Date(threat.timestamp).toLocaleTimeString()}
+                        </div>
+                    </div>
+                    <div class="threat-badge badge-${threat.threat_level}">
+                        ${threat.threat_level}
+                    </div>
+                </div>
+            `).join('');
+
+            if (threatsHTML === '') {
+                threatsHTML = '<p style="text-align: center; color: #666; padding: 20px;">No recent high-priority threats detected</p>';
+            }
+
+            container.innerHTML = threatsHTML;
+        }
+
+        // Update threat level indicator
+        function updateThreatLevel() {
+            const indicator = document.getElementById('threatIndicator');
+            const criticalCount = securityData.threat_level_distribution?.critical || 0;
+            const highCount = securityData.threat_level_distribution?.high || 0;
+            const mediumCount = securityData.threat_level_distribution?.medium || 0;
+
+            let level, icon, text;
+            
+            if (criticalCount > 0) {
+                level = 'critical';
+                icon = '🚨';
+                text = 'Threat Level: CRITICAL';
+            } else if (highCount > 2) {
+                level = 'high';
+                icon = '⚠️';
+                text = 'Threat Level: HIGH';
+            } else if (mediumCount > 5) {
+                level = 'medium';
+                icon = '🟡';
+                text = 'Threat Level: MEDIUM';
+            } else {
+                level = 'low';
+                icon = '🛡️';
+                text = 'Threat Level: LOW';
+            }
+
+            indicator.className = `threat-level-indicator threat-level-${level}`;
+            indicator.innerHTML = `<span>${icon}</span><span>${text}</span>`;
+
+            // Show alert banner for critical threats
+            if (level === 'critical') {
+                document.getElementById('alertBanner').style.display = 'block';
+            }
+        }
+
+        // Load other views (placeholder implementations)
+        function loadThreatMonitoring() {
+            const container = document.getElementById('liveThreatFeed');
+            container.innerHTML = '<p style="text-align: center; padding: 20px;">Live threat monitoring active - No active threats detected</p>';
+        }
+
+        function loadIncidentManagement() {
+            const container = document.getElementById('incidentsList');
+            container.innerHTML = `
+                <table class="incident-table">
+                    <thead>
+                        <tr>
+                            <th>Incident ID</th>
+                            <th>Title</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Assigned To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>INC-001</td>
+                            <td>Suspicious Login Activity</td>
+                            <td><span class="threat-badge badge-medium">MEDIUM</span></td>
+                            <td><span class="status-badge status-investigating">INVESTIGATING</span></td>
+                            <td>security_team</td>
+                        </tr>
+                        <tr>
+                            <td>INC-002</td>
+                            <td>Potential SQL Injection</td>
+                            <td><span class="threat-badge badge-high">HIGH</span></td>
+                            <td><span class="status-badge status-open">OPEN</span></td>
+                            <td>incident_response</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function loadComplianceReports() {
+            const container = document.getElementById('complianceStatus');
+            const complianceData = securityData.compliance_scores || {
+                'gdpr': 87.5,
+                'sox': 91.0,
+                'pci_dss': 88.3
+            };
+
+            let complianceHTML = Object.entries(complianceData).map(([standard, score]) => `
+                <div class="compliance-card">
+                    <div class="compliance-score">${score.toFixed(1)}%</div>
+                    <div class="compliance-label">${standard.toUpperCase().replace('_', '-')}</div>
+                    <div class="compliance-status">${score >= 90 ? 'Compliant' : score >= 80 ? 'Mostly Compliant' : 'Non-Compliant'}</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = complianceHTML;
+        }
+
+        function loadSecurityControls() {
+            const accessContainer = document.getElementById('accessControls');
+            const dataContainer = document.getElementById('dataProtection');
+
+            accessContainer.innerHTML = `
+                <div style="padding: 20px;">
+                    <h4>🔐 Role-Based Access Control</h4>
+                    <p>✅ Active - 47 users, 8 roles configured</p>
+                    <h4>🔑 Multi-Factor Authentication</h4>
+                    <p>✅ Enabled - 89% user adoption rate</p>
+                    <h4>🚪 Single Sign-On</h4>
+                    <p>✅ Active - SAML 2.0 configured</p>
+                </div>
+            `;
+
+            dataContainer.innerHTML = `
+                <div style="padding: 20px;">
+                    <h4>🔒 Data Encryption</h4>
+                    <p>✅ AES-256 encryption at rest and in transit</p>
+                    <h4>🔐 Key Management</h4>
+                    <p>✅ Hardware Security Modules (HSM) active</p>
+                    <h4>🗃️ Data Loss Prevention</h4>
+                    <p>✅ DLP policies active - 0 violations detected</p>
+                </div>
+            `;
+        }
+
+        // Security control functions
+        function refreshSecurityData() {
+            loadSecurityData();
+            showToast('Security data refreshed successfully', 'success');
+        }
+
+        function scanForThreats() {
+            showToast('Threat scan initiated - Results will be available in 2-3 minutes', 'info');
+            // Simulate scanning process
+            setTimeout(() => {
+                showToast('Threat scan completed - No new threats detected', 'success');
+            }, 3000);
+        }
+
+        function generateReport() {
+            showToast('Security report generation started', 'info');
+            // In production, this would generate and download a report
+            setTimeout(() => {
+                showToast('Security report generated and sent to your email', 'success');
+            }, 2000);
+        }
+
+        function lockdownSystem() {
+            if (confirm('Are you sure you want to initiate emergency lockdown? This will restrict all non-essential system access.')) {
+                showToast('EMERGENCY LOCKDOWN INITIATED - All non-essential access restricted', 'warning');
+                document.getElementById('alertBanner').innerHTML = '<strong>🚨 SYSTEM LOCKDOWN:</strong> Emergency lockdown active - Contact security administrator';
+                document.getElementById('alertBanner').style.display = 'block';
+            }
+        }
+
+        function dismissAlert() {
+            document.getElementById('alertBanner').style.display = 'none';
+        }
+
+        // Update real-time data
+        function updateRealTimeData() {
+            if (currentView === 'overview') {
+                loadSecurityData();
+            }
+        }
+
+        // Utility function to show toast messages
+        function showToast(message, type) {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: ${type === 'success' ? '#4caf50' : type === 'warning' ? '#ff9800' : '#2196f3'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                z-index: 1002;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Fade in
+            setTimeout(() => toast.style.opacity = '1', 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

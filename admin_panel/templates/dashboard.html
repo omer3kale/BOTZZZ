@@ -224,6 +224,44 @@
             </div>
         </div>
 
+        <!-- Tier 1 High-Impact Features -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-rocket me-2"></i>🚀 Tier 1 Enterprise Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('analytics_dashboard') }}" class="btn btn-lg w-100 enterprise-feature-btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                            <i class="fas fa-chart-area fa-2x mb-2"></i>
+                            <div>📊 Real-Time Analytics</div>
+                            <small>Comprehensive Performance Insights</small>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('ai_management') }}" class="btn btn-lg w-100 enterprise-feature-btn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; border: none;">
+                            <i class="fas fa-robot fa-2x mb-2"></i>
+                            <div>🤖 AI Bot Management</div>
+                            <small>Intelligent Bot Orchestration</small>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('campaign_center') }}" class="btn btn-lg w-100 enterprise-feature-btn" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none;">
+                            <i class="fas fa-bullhorn fa-2x mb-2"></i>
+                            <div>📢 Campaign Center</div>
+                            <small>Advanced Campaign Management</small>
+                        </a>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Enterprise-Grade Features:</strong> Real-time analytics, AI-powered bot management, and sophisticated campaign orchestration now active!
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Actions -->
         <div class="card mt-4">
             <div class="card-header">
@@ -247,6 +285,29 @@
                     <a href="{{ url_for('logs') }}" class="btn btn-outline-secondary">
                         <i class="fas fa-file-alt me-2"></i>System Logs
                     </a>
+                    <a href="{{ url_for('bulletproof_dashboard') }}" class="btn btn-outline-success">
+                        <i class="fas fa-shield-alt me-2"></i>🛡️ Bulletproof Systems
+                    </a>
+                    {% if current_user.role == 'super_admin' %}
+                    <a href="{{ url_for('enterprise_marketplace') }}" class="btn btn-outline-primary" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none;">
+                        <i class="fas fa-store me-2"></i>💼 Enterprise Marketplace
+                    </a>
+                    <a href="{{ url_for('premium_ai_dashboard') }}" class="btn btn-outline-primary mt-2" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none;">
+                        <i class="fas fa-brain me-2"></i>🧠 Premium AI Engine
+                    </a>
+                    <a href="{{ url_for('business_intelligence_dashboard') }}" class="btn btn-outline-primary mt-2" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; border: none;">
+                        <i class="fas fa-chart-line me-2"></i>📊 Business Intelligence
+                    </a>
+                    <a href="{{ url_for('enterprise_security_dashboard') }}" class="btn btn-outline-primary mt-2" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border: none;">
+                        <i class="fas fa-shield-alt me-2"></i>🔒 Enterprise Security
+                    </a>
+                    <a href="{{ url_for('social_orchestrator_dashboard') }}" class="btn btn-outline-primary mt-2" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none;">
+                        <i class="fas fa-rocket me-2"></i>🚀 Social Media Orchestrator
+                    </a>
+                    <a href="{{ url_for('revenue_optimization_dashboard') }}" class="btn btn-outline-primary mt-2" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none;">
+                        <i class="fas fa-chart-line me-2"></i>💰 Revenue Optimization
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -356,6 +417,33 @@ for (let i = 0; i < 5; i++) {
 
 #activityChart {
     height: 300px !important;
+}
+
+.enterprise-feature-btn {
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.enterprise-feature-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.enterprise-feature-btn i {
+    display: block;
+}
+
+.enterprise-feature-btn div {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.enterprise-feature-btn small {
+    opacity: 0.9;
+    font-size: 0.8em;
 }
 </style>
 {% endblock %}

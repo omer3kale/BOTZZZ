@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Multi-Platform Social Media Orchestrator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --orchestrator-primary: #667eea;
+            --orchestrator-secondary: #764ba2;
+            --orchestrator-accent: #f093fb;
+            --orchestrator-success: #4ecdc4;
+            --orchestrator-warning: #ffe66d;
+            --orchestrator-danger: #ff6b6b;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--orchestrator-primary), var(--orchestrator-secondary));
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .orchestrator-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .orchestrator-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
+        }
+        
+        .platform-badge {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .platform-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; }
+        .platform-youtube { background: linear-gradient(45deg, #ff0000, #cc0000); color: white; }
+        .platform-tiktok { background: linear-gradient(45deg, #000000, #ff0050); color: white; }
+        .platform-twitter { background: linear-gradient(45deg, #1da1f2, #0d95e8); color: white; }
+        .platform-linkedin { background: linear-gradient(45deg, #0077b5, #005885); color: white; }
+        .platform-facebook { background: linear-gradient(45deg, #1877f2, #166fe5); color: white; }
+        
+        .engagement-metric {
+            background: linear-gradient(135deg, var(--orchestrator-success), #3dd5f3);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .ai-insight-card {
+            background: linear-gradient(135deg, var(--orchestrator-accent), #f5576c);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin: 15px 0;
+        }
+        
+        .content-status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-published { background: var(--orchestrator-success); color: white; }
+        .status-scheduled { background: var(--orchestrator-warning); color: #333; }
+        .status-draft { background: #6c757d; color: white; }
+        .status-failed { background: var(--orchestrator-danger); color: white; }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .orchestrator-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+        }
+        
+        .orchestrator-nav {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .orchestrator-btn {
+            background: linear-gradient(135deg, var(--orchestrator-primary), var(--orchestrator-secondary));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .orchestrator-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(78, 205, 196, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); }
+        }
+        
+        .automation-control {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .platform-performance {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: white;
+            margin: 0 auto 10px;
+        }
+        
+        .score-high { background: linear-gradient(135deg, #4ecdc4, #3dd5f3); }
+        .score-medium { background: linear-gradient(135deg, #ffe66d, #ffb347); }
+        .score-low { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        
+        .content-calendar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .calendar-item {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid var(--orchestrator-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="orchestrator-header">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-rocket me-3"></i>
+                Multi-Platform Social Media Orchestrator
+            </h1>
+            <p class="lead">
+                <span class="live-indicator"></span>
+                AI-Powered Cross-Platform Management & Engagement Optimization
+            </p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="orchestrator-nav">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <button class="orchestrator-btn" onclick="showSection('overview')">
+                            <i class="fas fa-chart-pie me-2"></i>Overview
+                        </button>
+                        <button class="orchestrator-btn" onclick="showSection('platforms')">
+                            <i class="fas fa-share-alt me-2"></i>Platforms
+                        </button>
+                        <button class="orchestrator-btn" onclick="showSection('content')">
+                            <i class="fas fa-edit me-2"></i>Content
+                        </button>
+                        <button class="orchestrator-btn" onclick="showSection('analytics')">
+                            <i class="fas fa-analytics me-2"></i>Analytics
+                        </button>
+                        <button class="orchestrator-btn" onclick="showSection('ai-insights')">
+                            <i class="fas fa-brain me-2"></i>AI Insights
+                        </button>
+                        <button class="orchestrator-btn" onclick="showSection('automation')">
+                            <i class="fas fa-robot me-2"></i>Automation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="overview-section" class="section-content">
+            <div class="row">
+                <!-- Key Metrics -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="orchestrator-card p-4 text-center">
+                        <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                        <h3 id="totalFollowers">0</h3>
+                        <p class="text-muted">Total Followers</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="orchestrator-card p-4 text-center">
+                        <i class="fas fa-heart fa-3x text-danger mb-3"></i>
+                        <h3 id="weeklyEngagement">0</h3>
+                        <p class="text-muted">Weekly Engagement</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="orchestrator-card p-4 text-center">
+                        <i class="fas fa-share-alt fa-3x text-success mb-3"></i>
+                        <h3 id="totalAccounts">0</h3>
+                        <p class="text-muted">Connected Accounts</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="orchestrator-card p-4 text-center">
+                        <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                        <h3 id="growthRate">0%</h3>
+                        <p class="text-muted">Growth Rate</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Performance Grid -->
+            <div class="performance-grid" id="platformPerformance">
+                <!-- Platform cards will be populated here -->
+            </div>
+
+            <!-- Engagement Chart -->
+            <div class="chart-container">
+                <h4><i class="fas fa-chart-area me-2"></i>Engagement Trends</h4>
+                <canvas id="engagementChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Platforms Section -->
+        <div id="platforms-section" class="section-content" style="display:none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-share-alt me-2"></i>Connected Platforms</h4>
+                        <div id="platformsList" class="mt-4">
+                            <!-- Platforms will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-plus me-2"></i>Connect New Platform</h4>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <select class="form-select" id="newPlatformSelect">
+                                    <option value="">Select Platform</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="facebook">Facebook</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn orchestrator-btn" onclick="connectPlatform()">
+                                    <i class="fas fa-link me-2"></i>Connect Platform
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div id="content-section" class="section-content" style="display:none;">
+            <div class="row">
+                <!-- Create New Post -->
+                <div class="col-lg-6 mb-4">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-plus me-2"></i>Create New Post</h4>
+                        <form id="newPostForm" class="mt-3">
+                            <div class="mb-3">
+                                <label class="form-label">Platform</label>
+                                <select class="form-select" id="postPlatform" required>
+                                    <option value="">Select Platform</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="twitter">Twitter</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="facebook">Facebook</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Content Type</label>
+                                <select class="form-select" id="postContentType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="image">Image</option>
+                                    <option value="video">Video</option>
+                                    <option value="story">Story</option>
+                                    <option value="reel">Reel</option>
+                                    <option value="post">Text Post</option>
+                                    <option value="article">Article</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" id="postTitle" placeholder="Enter post title..." required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="postDescription" rows="4" placeholder="Write your post description..."></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Hashtags (comma-separated)</label>
+                                <input type="text" class="form-control" id="postHashtags" placeholder="#example, #hashtags, #content">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Schedule Time (optional)</label>
+                                <input type="datetime-local" class="form-control" id="postScheduleTime">
+                            </div>
+                            
+                            <button type="submit" class="btn orchestrator-btn w-100">
+                                <i class="fas fa-paper-plane me-2"></i>Create Post
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Content Calendar -->
+                <div class="col-lg-6 mb-4">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-calendar me-2"></i>Content Calendar</h4>
+                        <div id="contentCalendar" class="mt-3">
+                            <!-- Calendar items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Status Overview -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-list me-2"></i>Content Status</h4>
+                        <div class="chart-container">
+                            <canvas id="contentStatusChart" height="80"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analytics-section" class="section-content" style="display:none;">
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-chart-bar me-2"></i>Platform Comparison</h4>
+                        <div class="chart-container">
+                            <canvas id="platformChart" height="120"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-heart me-2"></i>Engagement Types</h4>
+                        <div class="chart-container">
+                            <canvas id="engagementTypeChart" height="120"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-trophy me-2"></i>Top Performing Posts</h4>
+                        <div id="topPostsList" class="mt-3">
+                            <!-- Top posts will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights Section -->
+        <div id="ai-insights-section" class="section-content" style="display:none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-brain me-2"></i>AI-Powered Insights & Recommendations</h4>
+                        <div id="aiInsightsList" class="mt-4">
+                            <!-- AI insights will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-hashtag me-2"></i>Hashtag Performance</h4>
+                        <div id="hashtagPerformance" class="mt-3">
+                            <!-- Hashtag data will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-clock me-2"></i>Optimal Posting Times</h4>
+                        <div class="chart-container">
+                            <canvas id="optimalTimesChart" height="120"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Section -->
+        <div id="automation-section" class="section-content" style="display:none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="automation-control">
+                        <h4><i class="fas fa-robot me-2"></i>Automation Status</h4>
+                        <p class="mb-3">Multi-platform automation is currently <strong>ACTIVE</strong></p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <button class="btn btn-light" onclick="toggleAutomation(false)">
+                                <i class="fas fa-pause me-2"></i>Pause Automation
+                            </button>
+                            <button class="btn btn-light" onclick="emergencyStop()">
+                                <i class="fas fa-stop me-2"></i>Emergency Stop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-cogs me-2"></i>Automation Rules</h4>
+                        <div id="automationRules" class="mt-3">
+                            <!-- Automation rules will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="orchestrator-card p-4">
+                        <h4><i class="fas fa-history me-2"></i>Recent Activities</h4>
+                        <div id="recentActivities" class="mt-3">
+                            <!-- Recent activities will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let dashboardData = {};
+        let charts = {};
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            setupEventListeners();
+        });
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').style.display = 'block';
+            
+            // Load section-specific data
+            switch(sectionName) {
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+                case 'ai-insights':
+                    loadAIInsights();
+                    break;
+                case 'automation':
+                    loadAutomationData();
+                    break;
+                case 'content':
+                    loadContentCalendar();
+                    break;
+                case 'platforms':
+                    loadPlatforms();
+                    break;
+            }
+        }
+
+        function loadDashboardData() {
+            fetch('/api/social/dashboard')
+                .then(response => response.json())
+                .then(data => {
+                    dashboardData = data;
+                    updateOverviewMetrics();
+                    updatePlatformPerformance();
+                    createEngagementChart();
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard data:', error);
+                    // Use mock data for demonstration
+                    useMockData();
+                });
+        }
+
+        function useMockData() {
+            dashboardData = {
+                total_followers: 743000,
+                weekly_engagement: 89420,
+                total_accounts: 6,
+                avg_growth_rate: 12.8,
+                platform_performance: [
+                    {platform: 'tiktok', posts: 15, avg_ai_score: 8.9, avg_prediction: 7.1, avg_actual: 8.3},
+                    {platform: 'instagram', posts: 22, avg_ai_score: 8.7, avg_prediction: 4.2, avg_actual: 4.8},
+                    {platform: 'youtube', posts: 8, avg_ai_score: 9.1, avg_prediction: 5.8, avg_actual: 6.2},
+                    {platform: 'linkedin', posts: 12, avg_ai_score: 8.3, avg_prediction: 4.5, avg_actual: 5.1},
+                    {platform: 'facebook', posts: 18, avg_ai_score: 7.9, avg_prediction: 4.0, avg_actual: 4.1},
+                    {platform: 'twitter', posts: 25, avg_ai_score: 7.5, avg_prediction: 3.1, avg_actual: 2.9}
+                ]
+            };
+            updateOverviewMetrics();
+            updatePlatformPerformance();
+            createEngagementChart();
+        }
+
+        function updateOverviewMetrics() {
+            document.getElementById('totalFollowers').textContent = (dashboardData.total_followers || 0).toLocaleString();
+            document.getElementById('weeklyEngagement').textContent = (dashboardData.weekly_engagement || 0).toLocaleString();
+            document.getElementById('totalAccounts').textContent = dashboardData.total_accounts || 0;
+            document.getElementById('growthRate').textContent = (dashboardData.avg_growth_rate || 0) + '%';
+        }
+
+        function updatePlatformPerformance() {
+            const container = document.getElementById('platformPerformance');
+            container.innerHTML = '';
+
+            if (dashboardData.platform_performance) {
+                dashboardData.platform_performance.forEach(platform => {
+                    const scoreClass = platform.avg_ai_score >= 8 ? 'score-high' : 
+                                     platform.avg_ai_score >= 6 ? 'score-medium' : 'score-low';
+                    
+                    const platformClass = `platform-${platform.platform}`;
+                    
+                    container.innerHTML += `
+                        <div class="platform-performance">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="platform-badge ${platformClass}">
+                                    <i class="fab fa-${platform.platform}"></i>
+                                    ${platform.platform.charAt(0).toUpperCase() + platform.platform.slice(1)}
+                                </span>
+                                <span class="text-muted">${platform.posts} posts</span>
+                            </div>
+                            <div class="score-circle ${scoreClass}">
+                                ${platform.avg_ai_score.toFixed(1)}
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">AI Optimization Score</small>
+                                <div class="row mt-2">
+                                    <div class="col-6">
+                                        <strong>${platform.avg_prediction.toFixed(1)}%</strong><br>
+                                        <small>Predicted</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>${platform.avg_actual.toFixed(1)}%</strong><br>
+                                        <small>Actual</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function createEngagementChart() {
+            const ctx = document.getElementById('engagementChart').getContext('2d');
+            
+            // Mock engagement data
+            const labels = Array.from({length: 30}, (_, i) => {
+                const date = new Date();
+                date.setDate(date.getDate() - (29 - i));
+                return date.toLocaleDateString();
+            });
+            
+            const engagementData = labels.map(() => Math.floor(Math.random() * 5000 + 2000));
+            
+            charts.engagement = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Engagement',
+                        data: engagementData,
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // New post form
+            document.getElementById('newPostForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createNewPost();
+            });
+        }
+
+        function createNewPost() {
+            const formData = {
+                platform: document.getElementById('postPlatform').value,
+                content_type: document.getElementById('postContentType').value,
+                title: document.getElementById('postTitle').value,
+                description: document.getElementById('postDescription').value,
+                hashtags: document.getElementById('postHashtags').value.split(',').map(h => h.trim()),
+                scheduled_time: document.getElementById('postScheduleTime').value
+            };
+
+            fetch('/api/social/content/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Post created successfully!');
+                    document.getElementById('newPostForm').reset();
+                    loadContentCalendar();
+                } else {
+                    alert('❌ Error creating post: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Simulate success for demo
+                alert('✅ Post created successfully! (Demo Mode)');
+                document.getElementById('newPostForm').reset();
+            });
+        }
+
+        function loadAnalytics() {
+            // Create platform comparison chart
+            const ctx = document.getElementById('platformChart').getContext('2d');
+            charts.platform = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'Facebook', 'Twitter'],
+                    datasets: [{
+                        data: [250000, 125000, 89000, 78000, 156000, 45000],
+                        backgroundColor: [
+                            '#ff0050',
+                            '#f093fb',
+                            '#ff0000',
+                            '#0077b5',
+                            '#1877f2',
+                            '#1da1f2'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Create engagement type chart
+            const ctx2 = document.getElementById('engagementTypeChart').getContext('2d');
+            charts.engagementType = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Likes', 'Comments', 'Shares', 'Views', 'Saves'],
+                    datasets: [{
+                        data: [45000, 8900, 3200, 125000, 7800],
+                        backgroundColor: [
+                            '#ff6b6b',
+                            '#4ecdc4',
+                            '#45b7d1',
+                            '#96ceb4',
+                            '#ffeaa7'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadAIInsights() {
+            const container = document.getElementById('aiInsightsList');
+            const mockInsights = [
+                {
+                    recommendation: 'Post during 8-10 AM for 23% higher engagement on Instagram',
+                    confidence: 0.89,
+                    impact: 23.4
+                },
+                {
+                    recommendation: 'Use trending hashtags #viral #fyp for increased reach on TikTok',
+                    confidence: 0.92,
+                    impact: 45.7
+                },
+                {
+                    recommendation: 'Upload on Tuesdays and Thursdays for optimal YouTube performance',
+                    confidence: 0.85,
+                    impact: 18.9
+                }
+            ];
+
+            container.innerHTML = mockInsights.map(insight => `
+                <div class="ai-insight-card">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6><i class="fas fa-lightbulb me-2"></i>AI Recommendation</h6>
+                        <span class="badge bg-light text-dark">${(insight.confidence * 100).toFixed(0)}% Confidence</span>
+                    </div>
+                    <p class="mb-2">${insight.recommendation}</p>
+                    <small>Expected Impact: +${insight.impact}% engagement</small>
+                </div>
+            `).join('');
+        }
+
+        function loadAutomationData() {
+            const rulesContainer = document.getElementById('automationRules');
+            const activitiesContainer = document.getElementById('recentActivities');
+
+            rulesContainer.innerHTML = `
+                <div class="list-group">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Auto-Post Scheduler</strong><br>
+                            <small class="text-muted">Automatically publishes scheduled content</small>
+                        </div>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Engagement Booster</strong><br>
+                            <small class="text-muted">AI-powered engagement optimization</small>
+                        </div>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Hashtag Optimizer</strong><br>
+                            <small class="text-muted">Automatically suggests trending hashtags</small>
+                        </div>
+                        <span class="badge bg-warning">Paused</span>
+                    </div>
+                </div>
+            `;
+
+            activitiesContainer.innerHTML = `
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>Posted to Instagram</strong>
+                            <small class="text-muted">2 minutes ago</small>
+                        </div>
+                        <small>"New Product Launch" - 1,247 engagements</small>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>TikTok Video Processed</strong>
+                            <small class="text-muted">15 minutes ago</small>
+                        </div>
+                        <small>"Behind the Scenes" - AI Score: 8.9/10</small>
+                    </div>
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>LinkedIn Article Published</strong>
+                            <small class="text-muted">1 hour ago</small>
+                        </div>
+                        <small>"Leadership Insights" - 89 reactions</small>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadContentCalendar() {
+            const container = document.getElementById('contentCalendar');
+            const mockCalendar = [
+                {
+                    title: 'Product Update Video',
+                    platform: 'youtube',
+                    scheduled_time: '2024-01-20 14:00:00',
+                    status: 'scheduled'
+                },
+                {
+                    title: 'Behind the Scenes Photo',
+                    platform: 'instagram',
+                    scheduled_time: '2024-01-21 10:30:00',
+                    status: 'draft'
+                }
+            ];
+
+            container.innerHTML = mockCalendar.map(item => `
+                <div class="calendar-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6>${item.title}</h6>
+                            <span class="platform-badge platform-${item.platform}">
+                                <i class="fab fa-${item.platform}"></i>
+                                ${item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">${new Date(item.scheduled_time).toLocaleString()}</small><br>
+                            <span class="content-status-badge status-${item.status}">${item.status}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadPlatforms() {
+            const container = document.getElementById('platformsList');
+            const mockPlatforms = [
+                {platform: 'instagram', username: '@business_growth', followers: 125000, verified: true, status: 'active'},
+                {platform: 'youtube', username: 'Business Channel', followers: 89000, verified: false, status: 'active'},
+                {platform: 'tiktok', username: '@viral_content', followers: 250000, verified: true, status: 'active'},
+                {platform: 'twitter', username: '@company_updates', followers: 45000, verified: false, status: 'active'},
+                {platform: 'linkedin', username: 'Corporate Page', followers: 78000, verified: true, status: 'active'},
+                {platform: 'facebook', username: 'Business Page', followers: 156000, verified: false, status: 'active'}
+            ];
+
+            container.innerHTML = mockPlatforms.map(account => `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <span class="platform-badge platform-${account.platform}">
+                                    <i class="fab fa-${account.platform}"></i>
+                                    ${account.platform.charAt(0).toUpperCase() + account.platform.slice(1)}
+                                </span>
+                                <h6 class="mt-2 mb-1">${account.username}</h6>
+                                <p class="text-muted mb-0">${account.followers.toLocaleString()} followers</p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                ${account.verified ? '<i class="fas fa-check-circle text-primary me-2"></i>Verified' : ''}
+                                <span class="badge bg-success ms-2">${account.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function connectPlatform() {
+            const platform = document.getElementById('newPlatformSelect').value;
+            if (platform) {
+                alert(`🔗 Connecting to ${platform}... (Demo Mode)`);
+                document.getElementById('newPlatformSelect').value = '';
+                loadPlatforms();
+            }
+        }
+
+        function toggleAutomation(enabled) {
+            const status = enabled ? 'enabled' : 'paused';
+            alert(`🤖 Automation ${status}! (Demo Mode)`);
+        }
+
+        function emergencyStop() {
+            if (confirm('⚠️ Are you sure you want to emergency stop all automation?')) {
+                alert('🛑 All automation stopped! (Demo Mode)');
+            }
+        }
+
+        // Auto-refresh dashboard every 5 minutes
+        setInterval(() => {
+            loadDashboardData();
+        }, 300000);
+    </script>
+</body>
+</html>

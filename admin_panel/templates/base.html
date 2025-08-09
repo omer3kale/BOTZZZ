@@ -294,6 +294,33 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'bulletproof_dashboard' }}" href="{{ url_for('bulletproof_dashboard') }}">
+                                <i class="fas fa-shield-alt me-2 text-success"></i>🛡️ Bulletproof
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'ha_dashboard' }}" href="{{ url_for('ha_dashboard') }}">
+                                <i class="fas fa-network-wired me-2 text-info"></i>🏗️ HA Cluster
+                            </a>
+                        </li>
+                        {% if current_user.role == 'super_admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'enterprise_marketplace' }}" href="{{ url_for('enterprise_marketplace') }}">
+                                <i class="fas fa-store me-2 text-primary"></i>💼 Enterprise
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'premium_ai_dashboard' }}" href="{{ url_for('premium_ai_dashboard') }}">
+                                <i class="fas fa-brain me-2 text-info"></i>🧠 Premium AI
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ 'active' if request.endpoint == 'business_intelligence_dashboard' }}" href="{{ url_for('business_intelligence_dashboard') }}">
+                                <i class="fas fa-chart-line me-2 text-warning"></i>📊 Business Intelligence
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
                             <a class="nav-link {{ 'active' if request.endpoint == 'logs' }}" href="{{ url_for('logs') }}">
                                 <i class="fas fa-file-alt me-2"></i>System Logs
                             </a>

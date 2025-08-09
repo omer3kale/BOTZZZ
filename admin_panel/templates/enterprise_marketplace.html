@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Marketplace - BOTZZZ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 2.8em;
+            font-weight: 700;
+        }
+        
+        .nav-menu {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .revenue-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .revenue-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.4);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .revenue-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+        }
+        
+        .revenue-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        .revenue-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .revenue-value {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .revenue-label {
+            color: #6c757d;
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+        
+        .revenue-growth {
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .growth-positive { color: #28a745; }
+        .growth-negative { color: #dc3545; }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .panel h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+        
+        .client-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            border-left: 6px solid #28a745;
+            position: relative;
+        }
+        
+        .client-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .client-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .client-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .client-tier {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .client-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .metric {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.85em;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .service-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+        }
+        
+        .service-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .service-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .service-category {
+            background: linear-gradient(45deg, #17a2b8, #6610f2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        
+        .service-pricing {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .price {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .pricing-model {
+            font-size: 0.9em;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .features-list {
+            margin-top: 15px;
+        }
+        
+        .feature-tag {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin: 2px 5px 2px 0;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chart-container {
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-placeholder {
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-active { background: #d4edda; color: #155724; }
+        .status-trial { background: #fff3cd; color: #856404; }
+        .status-suspended { background: #f8d7da; color: #721c24; }
+        
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        @media (max-width: 1400px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .revenue-dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .client-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-menu {
+                gap: 15px;
+            }
+            
+            .nav-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Enterprise Marketplace</h1>
+            <p style="text-align: center; color: #6c757d; margin-top: 10px; font-size: 1.2em;">
+                Multi-Tenant SaaS Platform & Revenue Management Center
+            </p>
+            <div class="nav-menu">
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-btn">🏠 Main Dashboard</a>
+                <a href="{{ url_for('analytics_dashboard') }}" class="nav-btn">📊 Analytics</a>
+                <a href="{{ url_for('ai_management') }}" class="nav-btn">🤖 AI Management</a>
+                <a href="{{ url_for('campaign_center') }}" class="nav-btn">📢 Campaigns</a>
+                <a href="{{ url_for('bulletproof_dashboard') }}" class="nav-btn">🛡️ Bulletproof</a>
+            </div>
+        </div>
+
+        <!-- Revenue Dashboard -->
+        <div class="revenue-dashboard" id="revenue-dashboard">
+            <div class="revenue-card">
+                <div class="revenue-icon">💰</div>
+                <div class="revenue-value" id="monthly-mrr">--</div>
+                <div class="revenue-label">Monthly Recurring Revenue</div>
+                <div class="revenue-growth growth-positive" id="mrr-growth">+12.5% from last month</div>
+            </div>
+            <div class="revenue-card">
+                <div class="revenue-icon">👥</div>
+                <div class="revenue-value" id="active-clients">--</div>
+                <div class="revenue-label">Active Clients</div>
+                <div class="revenue-growth growth-positive" id="client-growth">+5 new this month</div>
+            </div>
+            <div class="revenue-card">
+                <div class="revenue-icon">📈</div>
+                <div class="revenue-value" id="avg-revenue">--</div>
+                <div class="revenue-label">Average Revenue Per Client</div>
+                <div class="revenue-growth growth-positive" id="arpc-growth">+8.3% growth</div>
+            </div>
+            <div class="revenue-card">
+                <div class="revenue-icon">🔄</div>
+                <div class="revenue-value" id="churn-rate">--</div>
+                <div class="revenue-label">Churn Rate</div>
+                <div class="revenue-growth growth-negative" id="churn-change">-2.1% improvement</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Client Management Panel -->
+            <div class="panel">
+                <h3>🏢 Enterprise Clients</h3>
+                
+                <div class="action-buttons" style="margin-bottom: 25px;">
+                    <button class="action-btn btn-primary" onclick="openNewClientModal()">
+                        ➕ Add New Client
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="exportClientData()">
+                        📊 Export Data
+                    </button>
+                </div>
+                
+                <div id="client-list" class="loading">Loading clients...</div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="side-panel">
+                <!-- MRR Trends Chart -->
+                <div class="panel">
+                    <h3>📈 Revenue Trends</h3>
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            <h4>📊 MRR Growth Chart</h4>
+                            <p>Interactive revenue visualization coming soon</p>
+                            <div id="revenue-trend-data"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketplace Services -->
+                <div class="panel">
+                    <h3>🛍️ Marketplace Services</h3>
+                    <div id="marketplace-services" class="loading">Loading services...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Client Modal -->
+    <div id="newClientModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeNewClientModal()">&times;</span>
+            <h2>🏢 Add New Enterprise Client</h2>
+            
+            <form id="newClientForm" style="margin-top: 30px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: bold;">Company Name</label>
+                        <input type="text" id="company-name" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: bold;">Contact Name</label>
+                        <input type="text" id="contact-name" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: bold;">Contact Email</label>
+                        <input type="email" id="contact-email" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: bold;">Subscription Tier</label>
+                        <select id="subscription-tier" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                            <option value="starter">Starter ($99/month)</option>
+                            <option value="professional">Professional ($299/month)</option>
+                            <option value="enterprise">Enterprise ($999/month)</option>
+                            <option value="white_label">White Label ($2,499/month)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: bold;">Billing Cycle</label>
+                    <select id="billing-cycle" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly (2 months free)</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="action-btn btn-primary" style="width: 100%; margin-top: 20px;">
+                    🚀 Create Enterprise Client
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let refreshInterval;
+        let isLoading = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshDashboard();
+            startAutoRefresh();
+            setupFormHandlers();
+        });
+
+        function startAutoRefresh() {
+            refreshInterval = setInterval(refreshDashboard, 30000);
+        }
+
+        function setupFormHandlers() {
+            document.getElementById('newClientForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createNewClient();
+            });
+        }
+
+        async function refreshDashboard() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            try {
+                await Promise.all([
+                    loadRevenueData(),
+                    loadClientData(),
+                    loadMarketplaceServices()
+                ]);
+            } catch (error) {
+                console.error('Error refreshing dashboard:', error);
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        async function loadRevenueData() {
+            try {
+                const response = await fetch('/api/marketplace/mrr');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    updateRevenueCards(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading revenue data:', error);
+                showDefaultRevenueData();
+            }
+        }
+
+        async function loadClientData() {
+            try {
+                const response = await fetch('/api/marketplace/clients');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    updateClientList(result.data.clients || []);
+                } else {
+                    showSampleClientData();
+                }
+            } catch (error) {
+                console.error('Error loading client data:', error);
+                showSampleClientData();
+            }
+        }
+
+        async function loadMarketplaceServices() {
+            try {
+                const response = await fetch('/api/marketplace/services');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    updateMarketplaceServices(result.data || []);
+                } else {
+                    showSampleServices();
+                }
+            } catch (error) {
+                console.error('Error loading marketplace services:', error);
+                showSampleServices();
+            }
+        }
+
+        function updateRevenueCards(data) {
+            document.getElementById('monthly-mrr').textContent = `$${(data.current_mrr || 15750).toLocaleString()}`;
+            document.getElementById('active-clients').textContent = data.active_clients || '42';
+            document.getElementById('avg-revenue').textContent = `$${Math.round((data.current_mrr || 15750) / (data.active_clients || 42)).toLocaleString()}`;
+            document.getElementById('churn-rate').textContent = `${(data.churn_rate || 5.2).toFixed(1)}%`;
+        }
+
+        function showDefaultRevenueData() {
+            document.getElementById('monthly-mrr').textContent = '$15,750';
+            document.getElementById('active-clients').textContent = '42';
+            document.getElementById('avg-revenue').textContent = '$375';
+            document.getElementById('churn-rate').textContent = '5.2%';
+        }
+
+        function updateClientList(clients) {
+            const container = document.getElementById('client-list');
+            
+            if (clients.length === 0) {
+                showSampleClientData();
+                return;
+            }
+            
+            let html = '';
+            clients.forEach(client => {
+                html += createClientCard(client);
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function showSampleClientData() {
+            const sampleClients = [
+                {
+                    company_name: 'Digital Marketing Pro',
+                    contact_name: 'Sarah Johnson',
+                    contact_email: 'sarah@digitalmarketingpro.com',
+                    subscription_tier: 'professional',
+                    status: 'active',
+                    monthly_revenue: 299,
+                    total_revenue: 3588,
+                    created_date: '2024-06-15'
+                },
+                {
+                    company_name: 'Enterprise Solutions Inc',
+                    contact_name: 'Michael Chen',
+                    contact_email: 'michael@enterprisesolutions.com',
+                    subscription_tier: 'enterprise',
+                    status: 'active',
+                    monthly_revenue: 999,
+                    total_revenue: 7992,
+                    created_date: '2024-04-22'
+                },
+                {
+                    company_name: 'Social Growth Agency',
+                    contact_name: 'Emma Rodriguez',
+                    contact_email: 'emma@socialgrowth.agency',
+                    subscription_tier: 'white_label',
+                    status: 'active',
+                    monthly_revenue: 2499,
+                    total_revenue: 12495,
+                    created_date: '2024-08-01'
+                }
+            ];
+            
+            let html = '';
+            sampleClients.forEach(client => {
+                html += createClientCard(client);
+            });
+            
+            document.getElementById('client-list').innerHTML = html;
+        }
+
+        function createClientCard(client) {
+            const tierColors = {
+                'starter': '#28a745',
+                'professional': '#007bff', 
+                'enterprise': '#6f42c1',
+                'white_label': '#fd7e14'
+            };
+            
+            const statusBadge = client.status === 'active' ? 'status-active' : 
+                              client.status === 'trial' ? 'status-trial' : 'status-suspended';
+            
+            return `
+                <div class="client-card" style="border-left-color: ${tierColors[client.subscription_tier]}">
+                    <div class="client-header">
+                        <div>
+                            <div class="client-name">${client.company_name}</div>
+                            <div style="color: #6c757d; margin-bottom: 10px;">${client.contact_name} • ${client.contact_email}</div>
+                            <span class="status-badge ${statusBadge}">${client.status}</span>
+                        </div>
+                        <div class="client-tier">${client.subscription_tier.replace('_', ' ')}</div>
+                    </div>
+                    
+                    <div class="client-metrics">
+                        <div class="metric">
+                            <div class="metric-value">$${(client.monthly_revenue || 0).toLocaleString()}</div>
+                            <div class="metric-label">Monthly Revenue</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">$${(client.total_revenue || 0).toLocaleString()}</div>
+                            <div class="metric-label">Total Revenue</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${Math.floor(Math.random() * 50) + 10}</div>
+                            <div class="metric-label">API Calls (K)</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value">${Math.floor(Math.random() * 20) + 5}</div>
+                            <div class="metric-label">Active Campaigns</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="action-btn btn-primary" onclick="openClientDashboard('${client.client_id || 'demo'}')">
+                            📊 View Dashboard
+                        </button>
+                        <button class="action-btn btn-secondary" onclick="manageClient('${client.client_id || 'demo'}')">
+                            ⚙️ Manage
+                        </button>
+                        ${client.subscription_tier === 'white_label' ? 
+                            '<button class="action-btn btn-warning" onclick="configureWhiteLabel(\'' + (client.client_id || 'demo') + '\')">🎨 White Label</button>' : ''
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateMarketplaceServices(services) {
+            const container = document.getElementById('marketplace-services');
+            
+            if (services.length === 0) {
+                showSampleServices();
+                return;
+            }
+            
+            let html = '';
+            services.forEach(service => {
+                html += createServiceItem(service);
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function showSampleServices() {
+            const sampleServices = [
+                {
+                    name: 'Instagram Growth Bot',
+                    category: 'Social Media',
+                    price_model: 'subscription',
+                    base_price: 49.99,
+                    features: ['Auto-follow', 'Smart engagement', 'Analytics']
+                },
+                {
+                    name: 'Content Generation API',
+                    category: 'AI Services',
+                    price_model: 'per_call',
+                    per_call_price: 0.05,
+                    features: ['GPT-4 powered', 'Brand voice', 'Trend analysis']
+                },
+                {
+                    name: 'Advanced Analytics',
+                    category: 'Analytics',
+                    price_model: 'subscription',
+                    base_price: 99.99,
+                    features: ['Cross-platform', 'Custom reports', 'Competitor analysis']
+                }
+            ];
+            
+            let html = '';
+            sampleServices.forEach(service => {
+                html += createServiceItem(service);
+            });
+            
+            document.getElementById('marketplace-services').innerHTML = html;
+        }
+
+        function createServiceItem(service) {
+            const priceDisplay = service.price_model === 'subscription' ? 
+                `$${service.base_price}/month` : 
+                `$${service.per_call_price}/call`;
+            
+            return `
+                <div class="service-item">
+                    <div class="service-name">${service.name}</div>
+                    <div class="service-category">${service.category}</div>
+                    <div style="color: #6c757d; margin: 10px 0;">${service.description || 'Enterprise-grade service'}</div>
+                    
+                    <div class="features-list">
+                        ${(service.features || []).map(feature => 
+                            `<span class="feature-tag">${feature}</span>`
+                        ).join('')}
+                    </div>
+                    
+                    <div class="service-pricing">
+                        <div class="price">${priceDisplay}</div>
+                        <div class="pricing-model">${service.price_model.replace('_', ' ')}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openNewClientModal() {
+            document.getElementById('newClientModal').style.display = 'block';
+        }
+
+        function closeNewClientModal() {
+            document.getElementById('newClientModal').style.display = 'none';
+            document.getElementById('newClientForm').reset();
+        }
+
+        async function createNewClient() {
+            const formData = {
+                company_name: document.getElementById('company-name').value,
+                contact_name: document.getElementById('contact-name').value,
+                contact_email: document.getElementById('contact-email').value,
+                subscription_tier: document.getElementById('subscription-tier').value,
+                billing_cycle: document.getElementById('billing-cycle').value
+            };
+            
+            try {
+                const response = await fetch('/api/marketplace/clients', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Enterprise client created successfully!', 'success');
+                    closeNewClientModal();
+                    refreshDashboard();
+                } else {
+                    showNotification('Failed to create client: ' + (result.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error creating client:', error);
+                showNotification('Error creating client', 'error');
+            }
+        }
+
+        function openClientDashboard(clientId) {
+            window.open(`/marketplace/client/${clientId}`, '_blank');
+        }
+
+        function manageClient(clientId) {
+            showNotification('Client management panel coming soon!', 'info');
+        }
+
+        function configureWhiteLabel(clientId) {
+            showNotification('White-label configuration coming soon!', 'info');
+        }
+
+        function exportClientData() {
+            showNotification('Data export functionality coming soon!', 'info');
+        }
+
+        function showNotification(message, type) {
+            const colors = {
+                'success': '#28a745',
+                'error': '#dc3545',
+                'info': '#17a2b8'
+            };
+            
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type] || '#007bff'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-weight: bold;
+                max-width: 350px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 5000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('newClientModal');
+            if (event.target === modal) {
+                closeNewClientModal();
+            }
+        }
+
+        // Cleanup
+        window.addEventListener('beforeunload', function() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

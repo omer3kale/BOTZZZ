@@ -1,0 +1,73 @@
+# BOTZZZ Enterprise Platform - Supabase Integration Requirements
+# Core Supabase and database dependencies
+
+# Supabase Python client
+supabase==2.7.4
+postgrest==0.16.8
+realtime==1.0.0
+
+# Database and PostgreSQL dependencies
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+# Async support
+aiohttp==3.9.5
+asyncio-mqtt==0.16.2
+
+# Additional utilities for data handling
+python-dotenv==1.0.1
+pydantic==2.8.2
+dataclasses-json==0.6.7
+
+# For real-time features
+websockets==12.0
+socketio==1.0.0
+
+# Data validation and serialization
+marshmallow==3.21.3
+cerberus==1.3.5
+
+# Existing Flask dependencies (keeping for compatibility)
+Flask==3.0.3
+Flask-Login==0.6.3
+Werkzeug==3.0.3
+
+# Additional enterprise features
+redis==5.0.7  # For caching and session management
+celery==5.4.0  # For background tasks
+flower==2.0.1  # For task monitoring
+
+# Security and encryption
+cryptography==42.0.8
+PyJWT==2.8.0
+bcrypt==4.1.3
+
+# Analytics and monitoring
+prometheus-client==0.20.0
+statsd==4.0.1
+
+# Data export and reporting
+openpyxl==3.1.5
+xlsxwriter==3.2.0
+reportlab==4.2.2
+
+# Email notifications
+sendgrid==6.11.0
+python-email-validator==2.2.0
+
+# File storage and processing
+boto3==1.34.144  # For AWS S3 integration
+Pillow==10.4.0  # Image processing
+
+# API documentation
+flask-restx==1.3.0
+flasgger==0.9.7.1
+
+# Development and testing (optional)
+pytest==8.2.2
+pytest-flask==1.3.0
+black==24.4.2
+flake8==7.1.0
+
+# Environment configuration
+python-decouple==3.8
