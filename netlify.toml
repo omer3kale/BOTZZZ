@@ -1,0 +1,36 @@
+# Netlify Configuration for BOTZZZ TikTok Integration
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
+# Redirect rules for TikTok integration
+[[redirects]]
+  from = "/auth/tiktok/callback"
+  to = "/.netlify/functions/auth-tiktok-callback"
+  status = 200
+
+[[redirects]]
+  from = "/webhook/tiktok"
+  to = "/.netlify/functions/webhook-tiktok"
+  status = 200
+
+[[redirects]]
+  from = "/webhook"
+  to = "/.netlify/functions/webhook-tiktok"
+  status = 200
+
+# Environment variables for functions
+[build.environment]
+  NODE_VERSION = "18"
+
+# Function settings
+[functions]
+  node_bundler = "esbuild"
+
+# Headers for security
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, X-TikTok-Signature"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
