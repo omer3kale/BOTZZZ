@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add Provider form
-    document.getElementById('addProviderForm').addEventListener('submit', function(e) {
+    document.getElementById('addProviderForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const providerName = document.getElementById('providerName').value;
@@ -404,47 +404,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span>Connecting & Importing Services...</span>';
+        submitBtn.innerHTML = '<span>Adding Provider...</span>';
         
-        // Simulate API connection and service import
-        setTimeout(() => {
-            const randomServices = Math.floor(Math.random() * 100) + 50;
-            const randomCategories = Math.floor(Math.random() * 10) + 5;
-            
-            const newProvider = {
-                id: 'provider_' + Date.now(),
-                name: providerName,
-                apiUrl: providerApiUrl,
-                apiKey: providerApiKey,
-                markup: priceMarkup,
-                status: 'active',
-                servicesCount: randomServices,
-                ordersCount: 0,
-                created: new Date().toISOString(),
-                lastSync: new Date().toISOString()
-            };
-            
-            const providers = getStorageData(STORAGE_KEYS.PROVIDERS);
-            providers.push(newProvider);
-            setStorageData(STORAGE_KEYS.PROVIDERS, providers);
-            
-            // Update success modal
-            document.getElementById('providerSuccessTitle').textContent = `${providerName} Connected!`;
-            document.getElementById('importedServicesCount').textContent = randomServices;
-            document.getElementById('importedCategoriesCount').textContent = randomCategories;
-            
-            closeModal('addProviderModal');
-            openModal('providerSuccessModal');
-            
-            // Reset form
-            document.getElementById('addProviderForm').reset();
+        try {
+            // Get auth token
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                alert('Please login to add providers');
+                window.location.href = '/signin.html';
+                return;
+            }
+
+            // Call backend to create provider
+            const response = await fetch('/.netlify/functions/providers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    action: 'create',
+                    name: providerName,
+                    apiUrl: providerApiUrl,
+                    apiKey: providerApiKey,
+                    markup: priceMarkup,
+                    status: 'active'
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Success - show modal
+                document.getElementById('providerSuccessTitle').textContent = `${providerName} Added!`;
+                document.getElementById('importedServicesCount').textContent = '0';
+                document.getElementById('importedCategoriesCount').textContent = '0';
+                
+                closeModal('addProviderModal');
+                openModal('providerSuccessModal');
+                
+                // Reset form
+                document.getElementById('addProviderForm').reset();
+                
+                // Re-render providers
+                renderProviders();
+                updateDashboardStats();
+            } else {
+                alert(data.error || 'Failed to add provider');
+            }
+        } catch (error) {
+            console.error('Add provider error:', error);
+            alert('Failed to add provider. Please try again.');
+        } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
-            
-            // Re-render providers
-            renderProviders();
-            updateDashboardStats();
-        }, 3000);
+        }
     });
     
     // Close modals when clicking outside

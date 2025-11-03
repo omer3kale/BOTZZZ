@@ -198,33 +198,37 @@
             </div>
             <form id="addProviderForm" class="modal-body">
                 <div class="form-group">
-                    <label for="providerName">Provider Name</label>
-                    <input type="text" id="providerName" placeholder="e.g., MainSMM, BestPanel" required>
+                    <label for="providerName">Provider Name *</label>
+                    <input type="text" id="providerName" placeholder="e.g., g1618.com, MainSMM" required>
                     <span class="form-hint">Give this provider a recognizable name</span>
                 </div>
 
                 <div class="form-group">
-                    <label for="providerApiUrl">API URL</label>
-                    <input type="url" id="providerApiUrl" placeholder="https://provider.com/api/v2" required>
+                    <label for="providerApiUrl">API URL *</label>
+                    <input type="url" id="providerApiUrl" placeholder="https://g1618.com" required>
                     <span class="form-hint">Provider's API endpoint URL</span>
                 </div>
 
                 <div class="form-group">
-                    <label for="providerApiKey">Provider API Key</label>
-                    <input type="text" id="providerApiKey" placeholder="Enter provider's API key" required>
+                    <label for="providerApiKey">API Key *</label>
+                    <input type="text" id="providerApiKey" placeholder="2ea09ee801c709411af403" required>
                     <span class="form-hint">Your API key from the provider's dashboard</span>
                 </div>
 
                 <div class="form-group">
-                    <label for="priceMarkup">Price Markup (%)</label>
-                    <input type="number" id="priceMarkup" placeholder="20" min="0" step="0.1" value="20" required>
-                    <span class="form-hint">Add percentage to provider prices (e.g., 20% = 1.2x provider price)</span>
+                    <label for="priceMarkup">Default Markup (%)</label>
+                    <input type="number" id="priceMarkup" placeholder="15" min="0" step="0.1" value="15" required>
+                    <span class="form-hint">Add this percentage to all provider rates</span>
                 </div>
 
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closeModal('addProviderModal')">Cancel</button>
                     <button type="submit" class="btn-primary">
-                        <span>Add Provider & Import Services</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        <span>Add Provider</span>
                     </button>
                 </div>
             </form>
