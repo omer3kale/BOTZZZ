@@ -107,81 +107,12 @@
                 </tbody>
             </table>
         </div>
-                        <td>$0.00</td>
-                        <td>$500.00</td>
-                        <td>
-                            <select class="inline-select" onchange="updatePaymentMethod(45827, this.value)">
-                                <option selected>Trustap</option>
-                                <option>Payeer</option>
-                                <option>Cryptomus</option>
-                                <option>MyFatoorah</option>
-                                <option>Bonus</option>
-                                <option>TEST</option>
-                                <option>Borç</option>
-                            </select>
-                        </td>
-                        <td><span class="status-badge fail">Declined</span></td>
-                        <td><span class="risk-badge high">High</span></td>
-                        <td>Suspicious transaction</td>
-                        <td>2025-11-01 10:20:15</td>
-                        <td>2025-11-01 10:21:02</td>
-                        <td>Live</td>
-                    </tr>
-                    <tr>
-                        <td>45826</td>
-                        <td>jj1302524</td>
-                        <td>$5.00</td>
-                        <td>$5.00</td>
-                        <td>
-                            <select class="inline-select" onchange="updatePaymentMethod(45826, this.value)">
-                                <option selected>Bonus</option>
-                                <option>Payeer</option>
-                                <option>Cryptomus</option>
-                                <option>MyFatoorah</option>
-                                <option>Trustap</option>
-                                <option>TEST</option>
-                                <option>Borç</option>
-                            </select>
-                        </td>
-                        <td><span class="status-badge completed">Completed</span></td>
-                        <td><span class="risk-badge low">Low</span></td>
-                        <td>Welcome bonus</td>
-                        <td>2025-11-01 20:06:23</td>
-                        <td>2025-11-01 20:06:23</td>
-                        <td>Auto</td>
-                    </tr>
-                    <tr>
-                        <td>45825</td>
-                        <td>yamh48378</td>
-                        <td>$0.00</td>
-                        <td>$10.00</td>
-                        <td>
-                            <select class="inline-select" onchange="updatePaymentMethod(45825, this.value)">
-                                <option selected>TEST</option>
-                                <option>Payeer</option>
-                                <option>Cryptomus</option>
-                                <option>MyFatoorah</option>
-                                <option>Trustap</option>
-                                <option>Bonus</option>
-                                <option>Borç</option>
-                            </select>
-                        </td>
-                        <td><span class="status-badge in-progress">Processing</span></td>
-                        <td><span class="risk-badge low">Low</span></td>
-                        <td>Test payment</td>
-                        <td>2025-11-01 21:23:59</td>
-                        <td>2025-11-01 22:24:50</td>
-                        <td>Test</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
         <!-- Pagination -->
         <div class="pagination">
-            <button class="btn-secondary" disabled>Previous</button>
-            <span class="pagination-info">Showing 1-7 of 243</span>
-            <button class="btn-secondary">Next</button>
+            <button class="btn-secondary" id="prevPage" disabled>Previous</button>
+            <span class="pagination-info" id="paginationInfo">Showing 0-0 of 0</span>
+            <button class="btn-secondary" id="nextPage">Next</button>
         </div>
     </main>
 
