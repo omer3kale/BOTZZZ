@@ -12,25 +12,25 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-wrapper">
-                <a href="index.html" class="logo">BOTZZZ<span>773</span></a>
-                <ul class="nav-menu">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="order.html">Order</a></li>
-                    <li><a href="addfunds.html" class="active">Add Funds</a></li>
-                    <li><a href="api.html">API</a></li>
-                    <li><a href="tickets.html">Tickets</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
-                <div class="nav-actions">
-                    <a href="#login" class="btn-secondary">Login</a>
-                    <a href="#signup" class="btn-primary">Sign Up</a>
-                </div>
-                <button class="mobile-toggle" aria-label="Toggle menu">
+                <a href="index.html" class="logo">
+                    <span class="logo-text">BOTZZZ<span class="logo-highlight">773</span></span>
+                </a>
+                <button class="mobile-toggle" id="mobileToggle">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="services.html" class="nav-link">Services</a></li>
+                    <li><a href="order.html" class="nav-link">Order Now</a></li>
+                    <li><a href="addfunds.html" class="nav-link active">Add Funds</a></li>
+                    <li><a href="api.html" class="nav-link">API</a></li>
+                    <li><a href="tickets.html" class="nav-link">Tickets</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                    <!-- Auth navigation dynamically updated by main.js -->
+                    <li id="authNavItem"><a href="signin.html" class="nav-link btn-primary">Sign In</a></li>
+                </ul>
             </div>
         </div>
     </nav>
@@ -305,7 +305,6 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
     <script>
         // Authentication check - redirect if not logged in
         (function() {
@@ -318,6 +317,7 @@
             }
         })();
     </script>
+    <script src="js/main.js"></script>
     <script src="js/addfunds.js"></script>
 </body>
 </html>

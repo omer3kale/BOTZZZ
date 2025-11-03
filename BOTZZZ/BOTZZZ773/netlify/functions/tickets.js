@@ -20,7 +20,7 @@ exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Content-Type': 'application/json'
   };
 
@@ -57,7 +57,11 @@ exports.handler = async (event) => {
       case 'GET':
         return await handleGetTickets(user, body, headers);
       case 'POST':
-        return await handleCreateTicket(user, body, headers);
+        return await handlePostActions(user, body, headers);
+      case 'PUT':
+        return await handlePutActions(user, body, headers);
+      case 'DELETE':
+        return await handleDeleteTicket(user, body, headers);
       case 'PUT':
         return await handleUpdateTicket(user, body, headers);
       default:
@@ -343,6 +347,296 @@ async function handleUpdateTicket(user, data, headers) {
     };
   } catch (error) {
     console.error('Update ticket error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handlePostActions(user, data, headers) {
+  const { action } = data;
+
+  if (action === 'reply') {
+    return await handleReplyTicket(user, data, headers);
+  }
+
+  // Default to create ticket
+  return await handleCreateTicket(user, data, headers);
+}
+
+async function handlePutActions(user, data, headers) {
+  const { action } = data;
+
+  switch (action) {
+    case 'update-status':
+      return await handleUpdateStatus(user, data, headers);
+    case 'assign':
+      return await handleAssignTicket(user, data, headers);
+    case 'close':
+      return await handleCloseTicket(user, data, headers);
+    default:
+      return await handleUpdateTicket(user, data, headers);
+  }
+}
+
+async function handleReplyTicket(user, data, headers) {
+  try {
+    const { ticketId, message, isAdmin, autoClose } = data;
+
+    if (!ticketId || !message) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Ticket ID and message are required' })
+      };
+    }
+
+    // Add reply to ticket (you may need a ticket_replies table)
+    // For now, we'll just update the ticket with a note
+    const updateData = {
+      last_reply: message,
+      last_reply_by: isAdmin ? 'admin' : user.email,
+      updated_at: new Date().toISOString()
+    };
+
+    if (autoClose) {
+      updateData.status = 'closed';
+    }
+
+    const { error } = await supabaseAdmin
+      .from('tickets')
+      .update(updateData)
+      .eq('id', ticketId);
+
+    if (error) {
+      console.error('Reply ticket error:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to send reply' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: 'Reply sent successfully'
+      })
+    };
+  } catch (error) {
+    console.error('Reply ticket error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handleUpdateStatus(user, data, headers) {
+  try {
+    if (user.role !== 'admin') {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ error: 'Admin access required' })
+      };
+    }
+
+    const { ticketId, status } = data;
+
+    if (!ticketId || !status) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Ticket ID and status are required' })
+      };
+    }
+
+    const { error } = await supabaseAdmin
+      .from('tickets')
+      .update({ status })
+      .eq('id', ticketId);
+
+    if (error) {
+      console.error('Update status error:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to update status' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: `Ticket status updated to ${status}`
+      })
+    };
+  } catch (error) {
+    console.error('Update status error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handleAssignTicket(user, data, headers) {
+  try {
+    if (user.role !== 'admin') {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ error: 'Admin access required' })
+      };
+    }
+
+    const { ticketId, assignee } = data;
+
+    if (!ticketId || !assignee) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Ticket ID and assignee are required' })
+      };
+    }
+
+    const { error } = await supabaseAdmin
+      .from('tickets')
+      .update({ assigned_to: assignee })
+      .eq('id', ticketId);
+
+    if (error) {
+      console.error('Assign ticket error:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to assign ticket' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: `Ticket assigned to ${assignee}`
+      })
+    };
+  } catch (error) {
+    console.error('Assign ticket error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handleCloseTicket(user, data, headers) {
+  try {
+    if (user.role !== 'admin') {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ error: 'Admin access required' })
+      };
+    }
+
+    const { ticketId } = data;
+
+    if (!ticketId) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Ticket ID is required' })
+      };
+    }
+
+    const { error } = await supabaseAdmin
+      .from('tickets')
+      .update({ status: 'closed', closed_at: new Date().toISOString() })
+      .eq('id', ticketId);
+
+    if (error) {
+      console.error('Close ticket error:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to close ticket' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: 'Ticket closed successfully'
+      })
+    };
+  } catch (error) {
+    console.error('Close ticket error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handleDeleteTicket(user, data, headers) {
+  try {
+    if (user.role !== 'admin') {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ error: 'Admin access required' })
+      };
+    }
+
+    const { ticketId } = data;
+
+    if (!ticketId) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Ticket ID is required' })
+      };
+    }
+
+    const { error } = await supabaseAdmin
+      .from('tickets')
+      .delete()
+      .eq('id', ticketId);
+
+    if (error) {
+      console.error('Delete ticket error:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to delete ticket' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        message: 'Ticket deleted successfully'
+      })
+    };
+  } catch (error) {
+    console.error('Delete ticket error:', error);
     return {
       statusCode: 500,
       headers,

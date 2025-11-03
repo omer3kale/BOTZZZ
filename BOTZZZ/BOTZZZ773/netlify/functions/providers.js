@@ -279,22 +279,27 @@ async function syncProvider(data, headers) {
 
 async function createProvider(data, headers) {
   try {
-    const { name, apiUrl, apiKey, description, status } = data;
+    const { name, apiUrl, apiKey, markup, description, status } = data;
 
-    if (!name || !apiUrl || !apiKey) {
+    if (!name || !apiKey) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Name, API URL, and API Key are required' })
+        body: JSON.stringify({ error: 'Name and API Key are required' })
       };
     }
+
+    // Use a default API URL if not provided (will be updated when testing/syncing)
+    const providerApiUrl = apiUrl || 'https://provider-api.example.com';
+    const providerMarkup = markup || 15; // Default 15% markup
 
     const { data: provider, error } = await supabaseAdmin
       .from('providers')
       .insert({
         name,
-        api_url: apiUrl,
+        api_url: providerApiUrl,
         api_key: apiKey,
+        markup: providerMarkup,
         description: description || '',
         status: status || 'active'
       })

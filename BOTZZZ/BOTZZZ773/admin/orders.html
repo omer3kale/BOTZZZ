@@ -171,139 +171,16 @@
                     </tr>
                 </thead>
                 <tbody id="ordersTableBody">
-                    <!-- Sample Orders -->
-                    <tr data-status="pending">
-                        <td><input type="checkbox" class="order-checkbox"></td>
-                        <td>8309631</td>
-                        <td>codedsmm</td>
-                        <td>$0.67</td>
-                        <td><a href="#" class="link-preview">https://www.tiktok.com/@taylorkinney...</a></td>
-                        <td>0</td>
-                        <td>4008</td>
-                        <td>Tiktok Likes</td>
-                        <td><span class="status-badge pending">Pending</span></td>
-                        <td>5050</td>
-                        <td>2025-11-02 00:40:48</td>
-                        <td>Auto</td>
-                        <td>
-                            <div class="actions-dropdown">
-                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
-                                <div class="dropdown-menu">
-                                    <a href="#" onclick="viewOrder(8309631)">View</a>
-                                    <a href="#" onclick="editOrder(8309631)">Edit</a>
-                                    <a href="#" onclick="refillOrder(8309631)">Refill</a>
-                                    <a href="#" onclick="cancelOrder(8309631)">Cancel</a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="in-progress">
-                        <td><input type="checkbox" class="order-checkbox"></td>
-                        <td>8309630</td>
-                        <td>codedsmm</td>
-                        <td>$0.00</td>
-                        <td><a href="#" class="link-preview">https://www.instagram.com/reel/DQc...</a></td>
-                        <td>0</td>
-                        <td>73</td>
-                        <td>Instagram Video Views</td>
-                        <td><span class="status-badge in-progress">In progress</span></td>
-                        <td>73</td>
-                        <td>2025-11-02 00:40:27</td>
-                        <td>Auto</td>
-                        <td>
-                            <div class="actions-dropdown">
-                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
-                                <div class="dropdown-menu">
-                                    <a href="#" onclick="viewOrder(8309630)">View</a>
-                                    <a href="#" onclick="editOrder(8309630)">Edit</a>
-                                    <a href="#" onclick="refillOrder(8309630)">Refill</a>
-                                    <a href="#" onclick="cancelOrder(8309630)">Cancel</a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="completed">
-                        <td><input type="checkbox" class="order-checkbox"></td>
-                        <td>8309629</td>
-                        <td>codedsmm</td>
-                        <td>$0.01</td>
-                        <td><a href="#" class="link-preview">https://kick.com/mancisco1</a></td>
-                        <td>0</td>
-                        <td>20</td>
-                        <td>Kick Live Video Views</td>
-                        <td><span class="status-badge completed">Completed</span></td>
-                        <td>0</td>
-                        <td>2025-11-02 00:40:21</td>
-                        <td>Auto</td>
-                        <td>
-                            <div class="actions-dropdown">
-                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
-                                <div class="dropdown-menu">
-                                    <a href="#" onclick="viewOrder(8309629)">View</a>
-                                    <a href="#" onclick="refillOrder(8309629)">Refill</a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="in-progress">
-                        <td><input type="checkbox" class="order-checkbox"></td>
-                        <td>8309628</td>
-                        <td>pritampargarbabu123</td>
-                        <td>$0.02</td>
-                        <td><a href="#" class="link-preview">https://www.instagram.com/reel/DQi...</a></td>
-                        <td>0</td>
-                        <td>8000</td>
-                        <td>Instagram Video Views</td>
-                        <td><span class="status-badge in-progress">In progress</span></td>
-                        <td>8000</td>
-                        <td>2025-11-02 00:40:20</td>
-                        <td>Auto</td>
-                        <td>
-                            <div class="actions-dropdown">
-                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
-                                <div class="dropdown-menu">
-                                    <a href="#" onclick="viewOrder(8309628)">View</a>
-                                    <a href="#" onclick="editOrder(8309628)">Edit</a>
-                                    <a href="#" onclick="refillOrder(8309628)">Refill</a>
-                                    <a href="#" onclick="cancelOrder(8309628)">Cancel</a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="in-progress">
-                        <td><input type="checkbox" class="order-checkbox"></td>
-                        <td>8309627</td>
-                        <td>vanak</td>
-                        <td>$0.02</td>
-                        <td><a href="#" class="link-preview">https://www.tiktok.com/@efsaa.k06...</a></td>
-                        <td>0</td>
-                        <td>1100</td>
-                        <td>Tiktok Video Views</td>
-                        <td><span class="status-badge in-progress">In progress</span></td>
-                        <td>1100</td>
-                        <td>2025-11-02 00:40:09</td>
-                        <td>Auto</td>
-                        <td>
-                            <div class="actions-dropdown">
-                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
-                                <div class="dropdown-menu">
-                                    <a href="#" onclick="viewOrder(8309627)">View</a>
-                                    <a href="#" onclick="editOrder(8309627)">Edit</a>
-                                    <a href="#" onclick="refillOrder(8309627)">Refill</a>
-                                    <a href="#" onclick="cancelOrder(8309627)">Cancel</a>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <!-- Orders will be loaded dynamically from database -->
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
         <div class="pagination">
-            <button class="btn-secondary" disabled>Previous</button>
-            <span class="pagination-info">Showing 1-5 of 8,309</span>
-            <button class="btn-secondary">Next</button>
+            <button class="btn-secondary" id="prevPage" disabled>Previous</button>
+            <span class="pagination-info" id="paginationInfo">Loading...</span>
+            <button class="btn-secondary" id="nextPage">Next</button>
         </div>
     </main>
 

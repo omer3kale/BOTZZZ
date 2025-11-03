@@ -101,7 +101,24 @@
                     </tr>
                 </thead>
                 <tbody id="ticketsTableBody">
-                    <tr class="unread-ticket">
+                    <!-- Tickets will be loaded dynamically from database -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="btn-secondary" id="prevPage" disabled>Previous</button>
+            <span class="pagination-info" id="paginationInfo">Loading...</span>
+            <button class="btn-secondary" id="nextPage">Next</button>
+        </div>
+    </main>
+
+    <script src="../js/admin.js"></script>
+    <script src="../js/admin-tickets.js"></script>
+</body>
+</html>
+
                         <td><input type="checkbox" class="ticket-checkbox"></td>
                         <td>1045</td>
                         <td>codedsmm</td>

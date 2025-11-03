@@ -21,7 +21,7 @@ exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
     'Content-Type': 'application/json'
   };
 
@@ -55,6 +55,20 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const { action } = body;
 
+    // Handle PUT requests
+    if (event.httpMethod === 'PUT') {
+      if (action === 'update-method') {
+        if (user.role !== 'admin') {
+          return {
+            statusCode: 403,
+            headers,
+            body: JSON.stringify({ error: 'Admin access required' })
+          };
+        }
+        return await handleUpdatePaymentMethod(body, headers);
+      }
+    }
+
     switch (action) {
       case 'create-checkout':
         return await handleCreateCheckout(user, body, headers);
@@ -62,6 +76,26 @@ exports.handler = async (event) => {
         return await handleWebhook(event, headers);
       case 'history':
         return await handleGetHistory(user, headers);
+      case 'export':
+        // Admin-only action
+        if (user.role !== 'admin') {
+          return {
+            statusCode: 403,
+            headers,
+            body: JSON.stringify({ error: 'Admin access required' })
+          };
+        }
+        return await handleExportPayments(body, headers);
+      case 'admin-add-payment':
+        // Admin-only action
+        if (user.role !== 'admin') {
+          return {
+            statusCode: 403,
+            headers,
+            body: JSON.stringify({ error: 'Admin access required' })
+          };
+        }
+        return await handleAdminAddPayment(user, body, headers);
       default:
         return {
           statusCode: 400,
@@ -272,6 +306,278 @@ async function handleGetHistory(user, headers) {
       statusCode: 500,
       headers,
       body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handleAdminAddPayment(user, data, headers) {
+  try {
+    console.log('handleAdminAddPayment called with:', { user: user.email, data });
+    
+    const { userId, amount, method, transactionId, status, memo } = data;
+
+    // Validate required fields
+    if (!userId || !amount || !method || !status) {
+      console.error('Missing required fields:', { userId: !!userId, amount: !!amount, method: !!method, status: !!status });
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Missing required fields: userId, amount, method, status' })
+      };
+    }
+
+    if (amount <= 0) {
+      console.error('Invalid amount:', amount);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Amount must be greater than 0' })
+      };
+    }
+
+    // Generate transaction ID if not provided
+    const finalTransactionId = transactionId || `MANUAL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    console.log('Creating payment record...', { userId, amount, method, status, finalTransactionId });
+
+    // Create payment record
+    const { data: payment, error: paymentError } = await supabaseAdmin
+      .from('payments')
+      .insert({
+        user_id: userId,
+        transaction_id: finalTransactionId,
+        amount: parseFloat(amount),
+        method: method,
+        status: status,
+        memo: memo || null,
+        gateway_response: {
+          manual: true,
+          added_by: user.userId,
+          added_by_email: user.email,
+          timestamp: new Date().toISOString()
+        }
+      })
+      .select()
+      .single();
+
+    if (paymentError) {
+      console.error('Create payment error:', paymentError);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: `Failed to create payment record: ${paymentError.message}` })
+      };
+    }
+
+    console.log('Payment created successfully:', payment);
+
+    // If status is completed, add balance to user
+    if (status === 'completed') {
+      console.log('Payment completed, updating user balance...');
+      
+      const { data: targetUser, error: userError } = await supabaseAdmin
+        .from('users')
+        .select('balance, username, email')
+        .eq('id', userId)
+        .single();
+
+      if (userError) {
+        console.error('Get user error:', userError);
+        return {
+          statusCode: 404,
+          headers,
+          body: JSON.stringify({ error: `User not found: ${userError.message}` })
+        };
+      }
+
+      console.log('Target user found:', { username: targetUser.username, currentBalance: targetUser.balance });
+
+      const currentBalance = parseFloat(targetUser.balance) || 0;
+      const newBalance = currentBalance + parseFloat(amount);
+
+      console.log('Updating balance:', { currentBalance, amount: parseFloat(amount), newBalance });
+
+      const { error: updateError } = await supabaseAdmin
+        .from('users')
+        .update({ 
+          balance: newBalance.toFixed(2),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error('Update balance error:', updateError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: `Failed to update user balance: ${updateError.message}` })
+        };
+      }
+
+      console.log('Balance updated successfully');
+
+      return {
+        statusCode: 201,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          payment,
+          message: `Payment added successfully. User ${targetUser.username} balance updated from $${currentBalance.toFixed(2)} to $${newBalance.toFixed(2)}`
+        })
+      };
+    } else {
+      // Payment created but not completed (pending/failed)
+      console.log('Payment created with status:', status);
+      return {
+        statusCode: 201,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          payment,
+          message: `Payment record created with status: ${status}`
+        })
+      };
+    }
+  } catch (error) {
+    console.error('Admin add payment error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: `Internal server error: ${error.message}` })
+    };
+  }
+}
+
+async function handleExportPayments(data, headers) {
+  try {
+    const { format, dateFrom, dateTo, status } = data;
+
+    // Build query
+    let query = supabaseAdmin
+      .from('payments')
+      .select('*, users(username, email)');
+
+    if (dateFrom) {
+      query = query.gte('created_at', dateFrom);
+    }
+    if (dateTo) {
+      query = query.lte('created_at', dateTo);
+    }
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    const { data: payments, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Export payments error:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to fetch payments' })
+      };
+    }
+
+    let content = '';
+    let mimeType = '';
+    let filename = '';
+
+    if (format === 'csv') {
+      // Generate CSV
+      const csvRows = [
+        ['ID', 'User', 'Email', 'Amount', 'Method', 'Status', 'Transaction ID', 'Date'].join(',')
+      ];
+      
+      payments.forEach(payment => {
+        csvRows.push([
+          payment.id,
+          payment.users?.username || 'Unknown',
+          payment.users?.email || 'Unknown',
+          payment.amount,
+          payment.method,
+          payment.status,
+          payment.transaction_id || '',
+          new Date(payment.created_at).toISOString()
+        ].join(','));
+      });
+
+      content = csvRows.join('\n');
+      mimeType = 'text/csv';
+      filename = `payments-${Date.now()}.csv`;
+    } else if (format === 'json') {
+      content = JSON.stringify(payments, null, 2);
+      mimeType = 'application/json';
+      filename = `payments-${Date.now()}.json`;
+    } else {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Invalid export format' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        content,
+        mimeType,
+        filename
+      })
+    };
+  } catch (error) {
+    console.error('Export payments error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Failed to export payments' })
+    };
+  }
+}
+
+async function handleUpdatePaymentMethod(data, headers) {
+  try {
+    const { paymentId, method } = data;
+
+    if (!paymentId || !method) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Payment ID and method are required' })
+      };
+    }
+
+    const { data: payment, error } = await supabaseAdmin
+      .from('payments')
+      .update({ method })
+      .eq('id', paymentId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Update payment method error:', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to update payment method' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        payment
+      })
+    };
+  } catch (error) {
+    console.error('Update payment method error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Failed to update payment method' })
     };
   }
 }

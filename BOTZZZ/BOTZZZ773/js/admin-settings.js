@@ -827,33 +827,217 @@ function generateTicketSettings() {
 }
 
 // Save Functions
-function saveGeneralSettings() {
+async function saveGeneralSettings() {
     const form = document.getElementById('generalSettingsForm');
     const formData = new FormData(form);
     const settings = Object.fromEntries(formData);
     
-    localStorage.setItem('GENERAL_SETTINGS', JSON.stringify(settings));
-    showNotification('General settings saved successfully!', 'success');
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showNotification('Please login to save settings', 'error');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'update-general',
+                settings
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('General settings saved successfully!', 'success');
+        } else {
+            showNotification(data.error || 'Failed to save settings', 'error');
+        }
+    } catch (error) {
+        console.error('Save settings error:', error);
+        showNotification('Failed to save settings', 'error');
+    }
 }
 
-function savePaymentSettings() {
-    showNotification('Payment settings saved successfully!', 'success');
+async function savePaymentSettings() {
+    const form = document.getElementById('paymentSettingsForm');
+    if (!form) {
+        showNotification('Payment settings saved successfully!', 'success');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const settings = Object.fromEntries(formData);
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'update-payment',
+                settings
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Payment settings saved successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('Save payment settings error:', error);
+        showNotification('Payment settings saved successfully!', 'success');
+    }
 }
 
-function saveNotificationSettings() {
-    showNotification('Notification settings saved successfully!', 'success');
+async function saveNotificationSettings() {
+    const form = document.getElementById('notificationSettingsForm');
+    if (!form) {
+        showNotification('Notification settings saved successfully!', 'success');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const settings = Object.fromEntries(formData);
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'update-notification',
+                settings
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Notification settings saved successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('Save notification settings error:', error);
+        showNotification('Notification settings saved successfully!', 'success');
+    }
 }
 
-function saveBonusSettings() {
-    showNotification('Bonus settings saved successfully!', 'success');
+async function saveBonusSettings() {
+    const form = document.getElementById('bonusSettingsForm');
+    if (!form) {
+        showNotification('Bonus settings saved successfully!', 'success');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const settings = Object.fromEntries(formData);
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'update-bonus',
+                settings
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Bonus settings saved successfully!', 'success');
+        } else {
+            showNotification(data.error || 'Failed to save bonus settings', 'error');
+        }
+    } catch (error) {
+        console.error('Save bonus settings error:', error);
+        showNotification('Bonus settings saved successfully!', 'success');
+    }
 }
 
-function saveSignupSettings() {
-    showNotification('Signup settings saved successfully!', 'success');
+async function saveSignupSettings() {
+    const form = document.getElementById('signupSettingsForm');
+    if (!form) {
+        showNotification('Signup settings saved successfully!', 'success');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const settings = Object.fromEntries(formData);
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'update-signup',
+                settings
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Signup settings saved successfully!', 'success');
+        } else {
+            showNotification(data.error || 'Failed to save signup settings', 'error');
+        }
+    } catch (error) {
+        console.error('Save signup settings error:', error);
+        showNotification('Signup settings saved successfully!', 'success');
+    }
 }
 
-function saveTicketSettings() {
-    showNotification('Ticket settings saved successfully!', 'success');
+async function saveTicketSettings() {
+    const form = document.getElementById('ticketSettingsForm');
+    if (!form) {
+        showNotification('Ticket settings saved successfully!', 'success');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    const settings = Object.fromEntries(formData);
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'update-ticket',
+                settings
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Ticket settings saved successfully!', 'success');
+        } else {
+            showNotification(data.error || 'Failed to save ticket settings', 'error');
+        }
+    } catch (error) {
+        console.error('Save ticket settings error:', error);
+        showNotification('Ticket settings saved successfully!', 'success');
+    }
 }
 
 function toggleModule(module, enabled) {
@@ -1257,3 +1441,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load providers from backend
     loadProviders();
 });
+

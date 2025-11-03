@@ -386,3 +386,77 @@ function applyFilters() {
         mode: modeFilter
     });
 }
+
+// Load real orders from database
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadOrders();
+});
+
+async function loadOrders() {
+    const tbody = document.getElementById('ordersTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading orders...</td></tr>';
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/orders', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.orders && data.orders.length > 0) {
+            tbody.innerHTML = '';
+            
+            data.orders.forEach(order => {
+                const createdDate = new Date(order.created_at).toLocaleString();
+                const statusClass = order.status.toLowerCase().replace(' ', '-');
+                
+                const row = `
+                    <tr data-status="${statusClass}">
+                        <td><input type="checkbox" class="order-checkbox"></td>
+                        <td>${order.id}</td>
+                        <td>${order.users?.username || 'Unknown'}</td>
+                        <td>$${parseFloat(order.charge || 0).toFixed(2)}</td>
+                        <td><a href="${order.link}" class="link-preview" target="_blank">${order.link.substring(0, 40)}...</a></td>
+                        <td>${order.start_count || 0}</td>
+                        <td>${order.quantity || 0}</td>
+                        <td>${order.services?.name || 'Unknown Service'}</td>
+                        <td><span class="status-badge ${statusClass}">${order.status}</span></td>
+                        <td>${order.remains || 0}</td>
+                        <td>${createdDate}</td>
+                        <td>${order.mode || 'Auto'}</td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="viewOrder('${order.id}')">View</a>
+                                    ${order.status !== 'completed' && order.status !== 'canceled' ? `<a href="#" onclick="editOrder('${order.id}')">Edit</a>` : ''}
+                                    ${order.status === 'completed' ? `<a href="#" onclick="refillOrder('${order.id}')">Refill</a>` : ''}
+                                    ${order.status !== 'completed' && order.status !== 'canceled' ? `<a href="#" onclick="cancelOrder('${order.id}')">Cancel</a>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+            
+            // Update pagination
+            const paginationInfo = document.getElementById('paginationInfo');
+            if (paginationInfo) {
+                paginationInfo.textContent = `Showing 1-${Math.min(data.orders.length, 50)} of ${data.orders.length}`;
+            }
+        } else {
+            tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px; color: #888;">No orders found</td></tr>';
+        }
+    } catch (error) {
+        console.error('Load orders error:', error);
+        tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 20px; color: #ef4444;">Failed to load orders. Please refresh the page.</td></tr>';
+    }
+}

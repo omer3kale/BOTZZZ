@@ -18,6 +18,7 @@ CREATE TABLE users (
     status VARCHAR(20) DEFAULT 'active',
     role VARCHAR(20) DEFAULT 'user',
     api_key VARCHAR(64) UNIQUE,
+    last_login TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

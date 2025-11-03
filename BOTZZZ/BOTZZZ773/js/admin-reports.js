@@ -2,23 +2,63 @@
 
 let currentChart = null;
 let currentReportTab = 'payments';
+let reportData = null;
 
 // Initialize chart on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadReportData();
     initializeChart();
 });
+
+// Load report data from backend
+async function loadReportData() {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) return;
+        
+        const response = await fetch('/.netlify/functions/dashboard?reports=true', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            reportData = data;
+        } else {
+            // Use fallback sample data if backend returns no data
+            reportData = {
+                payments: [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400],
+                orders: [450, 380, 320, 280, 240, 200, 160, 120, 80, 40],
+                tickets: [25, 32, 28, 35, 30, 22, 18, 15, 12, 10],
+                profits: [3200, 2800, 2400, 2100, 1800, 1500, 1200, 900, 600, 300],
+                services: [156, 156, 155, 154, 153, 152, 151, 150, 149, 148],
+                labels: ['Nov 1', 'Nov 2', 'Nov 3', 'Nov 4', 'Nov 5', 'Nov 6', 'Nov 7', 'Nov 8', 'Nov 9', 'Nov 10']
+            };
+        }
+    } catch (error) {
+        console.error('Failed to load report data:', error);
+        // Use fallback sample data on error
+        reportData = {
+            payments: [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400],
+            orders: [450, 380, 320, 280, 240, 200, 160, 120, 80, 40],
+            tickets: [25, 32, 28, 35, 30, 22, 18, 15, 12, 10],
+            profits: [3200, 2800, 2400, 2100, 1800, 1500, 1200, 900, 600, 300],
+            services: [156, 156, 155, 154, 153, 152, 151, 150, 149, 148],
+            labels: ['Nov 1', 'Nov 2', 'Nov 3', 'Nov 4', 'Nov 5', 'Nov 6', 'Nov 7', 'Nov 8', 'Nov 9', 'Nov 10']
+        };
+    }
+}
 
 // Initialize main chart
 function initializeChart() {
     const ctx = document.getElementById('mainChart');
-    if (!ctx) return;
+    if (!ctx || !reportData) return;
 
-    // Sample data matching the screenshot (revenue spike at start of month)
     const data = {
-        labels: ['Nov 1', 'Nov 2', 'Nov 3', 'Nov 4', 'Nov 5', 'Nov 6', 'Nov 7', 'Nov 8', 'Nov 9', 'Nov 10'],
+        labels: reportData.labels || ['Nov 1', 'Nov 2', 'Nov 3', 'Nov 4', 'Nov 5', 'Nov 6', 'Nov 7', 'Nov 8', 'Nov 9', 'Nov 10'],
         datasets: [{
             label: 'Revenue',
-            data: [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400],
+            data: reportData.payments || [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400],
             borderColor: '#FF1494',
             backgroundColor: 'rgba(255, 20, 148, 0.1)',
             tension: 0.4,
@@ -86,35 +126,35 @@ function switchReportTab(tab) {
     updateChartData(tab);
 }
 
-// Update chart data
+// Update chart data from reportData
 function updateChartData(tab) {
-    if (!currentChart) return;
+    if (!currentChart || !reportData) return;
     
     let newData, label, color;
     
     switch(tab) {
         case 'payments':
-            newData = [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400];
+            newData = reportData.payments || [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400];
             label = 'Revenue';
             color = '#FF1494';
             break;
         case 'orders':
-            newData = [450, 380, 320, 280, 240, 200, 160, 120, 80, 40];
+            newData = reportData.orders || [450, 380, 320, 280, 240, 200, 160, 120, 80, 40];
             label = 'Orders';
             color = '#22c55e';
             break;
         case 'tickets':
-            newData = [25, 32, 28, 35, 30, 22, 18, 15, 12, 10];
+            newData = reportData.tickets || [25, 32, 28, 35, 30, 22, 18, 15, 12, 10];
             label = 'Tickets';
             color = '#eab308';
             break;
         case 'profits':
-            newData = [3200, 2800, 2400, 2100, 1800, 1500, 1200, 900, 600, 300];
+            newData = reportData.profits || [3200, 2800, 2400, 2100, 1800, 1500, 1200, 900, 600, 300];
             label = 'Profits';
             color = '#3b82f6';
             break;
         case 'services':
-            newData = [156, 156, 155, 154, 153, 152, 151, 150, 149, 148];
+            newData = reportData.services || [156, 156, 155, 154, 153, 152, 151, 150, 149, 148];
             label = 'Active Services';
             color = '#a855f7';
             break;

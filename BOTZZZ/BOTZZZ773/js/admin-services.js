@@ -113,9 +113,57 @@ function submitAddService(event) {
     const formData = new FormData(event.target);
     const serviceData = Object.fromEntries(formData);
     
-    console.log('Creating service:', serviceData);
-    showNotification('Service created successfully!', 'success');
-    closeModal();
+    // Show loading state
+    const submitBtn = document.querySelector('button[form="addServiceForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    }
+    
+    // Call backend API to create service
+    const token = localStorage.getItem('token');
+    
+    fetch('/.netlify/functions/services', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            action: 'create',
+            name: serviceData.name,
+            category: serviceData.category,
+            type: serviceData.type || 'default',
+            rate: parseFloat(serviceData.rate),
+            min_quantity: parseInt(serviceData.min),
+            max_quantity: parseInt(serviceData.max),
+            description: serviceData.description || '',
+            status: serviceData.status || 'active',
+            provider_id: serviceData.provider || null
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message || 'Service created successfully!', 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to create service', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-plus"></i> Create Service';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Create service error:', error);
+        showNotification('Failed to create service. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Create Service';
+        }
+    });
 }
 
 // Import services from provider
@@ -168,35 +216,94 @@ function importServices() {
     createModal('Import Services from Provider', content, actions);
 }
 
-function loadProviderServices(providerId) {
+async function loadProviderServices(providerId) {
     if (!providerId) return;
     
     const preview = document.getElementById('providerServicesPreview');
     const list = document.getElementById('servicesPreviewList');
     
-    const services = [
-        'Instagram Followers - Real',
-        'Instagram Likes - Fast',
-        'TikTok Views - HQ',
-        'YouTube Subscribers - Instant'
-    ];
+    try {
+        // Fetch real provider's services from backend
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/.netlify/functions/services?providerId=${providerId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            const services = result.services || [];
+            
+            if (services.length > 0) {
+                list.innerHTML = services.slice(0, 10).map(s => 
+                    `<div style="padding: 4px 0; color: #aaa;">• ${s.name}</div>`
+                ).join('');
+                if (services.length > 10) {
+                    list.innerHTML += `<div style="padding: 4px 0; color: #FF1494; font-weight: 600;">+ ${services.length - 10} more services</div>`;
+                }
+            } else {
+                list.innerHTML = '<div style="padding: 8px 0; color: #888;">No services found for this provider</div>';
+            }
+        } else {
+            list.innerHTML = '<div style="padding: 8px 0; color: #ff4444;">Error loading services</div>';
+        }
+    } catch (error) {
+        console.error('Error loading provider services:', error);
+        list.innerHTML = '<div style="padding: 8px 0; color: #ff4444;">Error loading services</div>';
+    }
     
-    list.innerHTML = services.map(s => `<div style="padding: 4px 0; color: #aaa;">• ${s}</div>`).join('');
     preview.style.display = 'block';
 }
 
-function submitImportServices(event) {
+async function submitImportServices(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     const importData = Object.fromEntries(formData);
     
-    console.log('Importing services:', importData);
-    showNotification('Services imported successfully! Syncing...', 'success');
-    closeModal();
+    const submitBtn = document.querySelector('button[form="importServicesForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+    }
     
-    setTimeout(() => {
-        showNotification('87 services added to your panel', 'success');
-    }, 2000);
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/providers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'sync',
+                providerId: importData.provider,
+                markup: parseFloat(importData.markup) || 15
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Successfully imported ${data.added || 0} new services and updated ${data.updated || 0} existing services!`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to import services', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-download"></i> Import Services';
+            }
+        }
+    } catch (error) {
+        console.error('Import services error:', error);
+        showNotification('Failed to import services. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-download"></i> Import Services';
+        }
+    }
 }
 
 // Create category
@@ -251,14 +358,53 @@ function createCategory() {
     createModal('Create New Category', content, actions);
 }
 
-function submitCreateCategory(event) {
+async function submitCreateCategory(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     const categoryData = Object.fromEntries(formData);
     
-    console.log('Creating category:', categoryData);
-    showNotification(`Category "${categoryData.categoryName}" created successfully!`, 'success');
-    closeModal();
+    const submitBtn = document.querySelector('button[form="createCategoryForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/services', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'create-category',
+                name: categoryData.categoryName,
+                description: categoryData.description || '',
+                icon: categoryData.icon || 'folder'
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Category "${categoryData.categoryName}" created successfully!`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to create category', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-folder-plus"></i> Create Category';
+            }
+        }
+    } catch (error) {
+        console.error('Create category error:', error);
+        showNotification('Failed to create category. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-folder-plus"></i> Create Category';
+        }
+    }
 }
 
 // Add subscription service
@@ -334,14 +480,58 @@ function addSubscription() {
     createModal('Add Subscription Service', content, actions);
 }
 
-function submitAddSubscription(event) {
+async function submitAddSubscription(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     const subscriptionData = Object.fromEntries(formData);
     
-    console.log('Creating subscription:', subscriptionData);
-    showNotification('Subscription service created successfully!', 'success');
-    closeModal();
+    const submitBtn = document.querySelector('button[form="addSubscriptionForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/services', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'create',
+                name: subscriptionData.serviceName,
+                category: subscriptionData.category,
+                type: 'subscription',
+                rate: parseFloat(subscriptionData.rate),
+                min_quantity: parseInt(subscriptionData.minQuantity),
+                max_quantity: parseInt(subscriptionData.maxQuantity),
+                description: subscriptionData.description || '',
+                status: 'active'
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification('Subscription service created successfully!', 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to create subscription', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Subscription';
+            }
+        }
+    } catch (error) {
+        console.error('Create subscription error:', error);
+        showNotification('Failed to create subscription. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Add Subscription';
+        }
+    }
 }
 
 // Edit service
@@ -386,10 +576,57 @@ function editService(serviceId) {
     createModal(`Edit Service #${serviceId}`, content, actions);
 }
 
-function submitEditService(event, serviceId) {
+async function submitEditService(event, serviceId) {
     event.preventDefault();
-    showNotification(`Service #${serviceId} updated successfully!`, 'success');
-    closeModal();
+    const formData = new FormData(event.target);
+    const serviceData = Object.fromEntries(formData);
+    
+    const submitBtn = document.querySelector('button[form="editServiceForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/services', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                serviceId: serviceId,
+                name: serviceData.serviceName,
+                category: serviceData.category,
+                rate: parseFloat(serviceData.rate),
+                min_quantity: parseInt(serviceData.min),
+                max_quantity: parseInt(serviceData.max),
+                description: serviceData.description,
+                status: serviceData.status
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Service #${serviceId} updated successfully!`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to update service', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
+        }
+    } catch (error) {
+        console.error('Update service error:', error);
+        showNotification('Failed to update service. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        }
+    }
 }
 
 // Duplicate service
@@ -414,9 +651,33 @@ function duplicateService(serviceId) {
     createModal('Duplicate Service', content, actions);
 }
 
-function confirmDuplicateService(serviceId) {
-    showNotification(`Service #${serviceId} duplicated successfully`, 'success');
-    closeModal();
+async function confirmDuplicateService(serviceId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/services', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'duplicate',
+                serviceId: serviceId
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Service #${serviceId} duplicated successfully!`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to duplicate service', 'error');
+        }
+    } catch (error) {
+        console.error('Duplicate service error:', error);
+        showNotification('Failed to duplicate service. Please try again.', 'error');
+    }
 }
 
 // Toggle service status
@@ -468,14 +729,125 @@ function deleteService(serviceId) {
     createModal('Delete Service', content, actions);
 }
 
-function confirmDeleteService(serviceId) {
-    showNotification(`Service #${serviceId} deleted successfully`, 'success');
-    closeModal();
+async function confirmDeleteService(serviceId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/services', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                serviceId: serviceId
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Service #${serviceId} deleted successfully`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to delete service', 'error');
+        }
+    } catch (error) {
+        console.error('Delete service error:', error);
+        showNotification('Failed to delete service. Please try again.', 'error');
+    }
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if (typeof handleSearch === 'function') {
         handleSearch('serviceSearch', 'servicesTable');
     }
+    await loadServices();
 });
+
+// Load real services from database
+async function loadServices() {
+    const tbody = document.getElementById('servicesTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading services...</td></tr>';
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/services', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.services && data.services.length > 0) {
+            tbody.innerHTML = '';
+            
+            let activeCount = 0;
+            data.services.forEach(service => {
+                if (service.status === 'active') activeCount++;
+                
+                const statusClass = service.status === 'active' ? 'completed' : 'pending';
+                const icon = service.category === 'instagram' ? 'fab fa-instagram' :
+                           service.category === 'tiktok' ? 'fab fa-tiktok' :
+                           service.category === 'youtube' ? 'fab fa-youtube' :
+                           service.category === 'twitter' ? 'fab fa-twitter' :
+                           service.category === 'facebook' ? 'fab fa-facebook' :
+                           'fas fa-box';
+                
+                const row = `
+                    <tr>
+                        <td><input type="checkbox" class="service-checkbox"></td>
+                        <td>${service.id}</td>
+                        <td>
+                            <div class="service-name">
+                                <i class="${icon}"></i>
+                                ${service.name}
+                            </div>
+                        </td>
+                        <td>${service.category || 'Default'}</td>
+                        <td>${service.providers?.name || 'N/A'}</td>
+                        <td>$${parseFloat(service.price || 0).toFixed(2)}</td>
+                        <td>${service.min_order || 0}</td>
+                        <td>${service.max_order || 0}</td>
+                        <td><span class="status-badge ${statusClass}">${service.status}</span></td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="editService('${service.id}')">Edit</a>
+                                    <a href="#" onclick="duplicateService('${service.id}')">Duplicate</a>
+                                    <a href="#" onclick="toggleService('${service.id}')">Toggle</a>
+                                    <a href="#" onclick="deleteService('${service.id}')">Delete</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+            
+            // Update stats
+            document.getElementById('totalServices').textContent = data.services.length;
+            document.getElementById('activeServices').textContent = activeCount;
+            document.getElementById('lastSync').textContent = new Date().toLocaleDateString();
+            
+            // Update pagination
+            const paginationInfo = document.getElementById('paginationInfo');
+            if (paginationInfo) {
+                paginationInfo.textContent = `Showing 1-${Math.min(data.services.length, 50)} of ${data.services.length}`;
+            }
+        } else {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #888;">No services found</td></tr>';
+            document.getElementById('totalServices').textContent = '0';
+            document.getElementById('activeServices').textContent = '0';
+        }
+    } catch (error) {
+        console.error('Load services error:', error);
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #ef4444;">Failed to load services. Please refresh the page.</td></tr>';
+    }
+}

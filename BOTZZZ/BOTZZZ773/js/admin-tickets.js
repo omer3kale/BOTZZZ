@@ -33,16 +33,37 @@ function closeModal() {
 }
 
 // Add ticket
-function addTicket() {
+async function addTicket() {
+    // Fetch real users from backend
+    let usersOptions = '<option value="">Loading users...</option>';
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/users', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            const users = result.users || [];
+            usersOptions = '<option value="">Select user...</option>' + 
+                users.map(user => `<option value="${user.id}">${user.username} (${user.email})</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        usersOptions = '<option value="">Error loading users</option>';
+    }
+    
     const content = `
         <form id="addTicketForm" onsubmit="submitAddTicket(event)" class="admin-form">
             <div class="form-group">
                 <label>User *</label>
                 <select name="userId" required>
-                    <option value="">Select user...</option>
-                    <option value="1">john_doe (@john_doe)</option>
-                    <option value="2">jane_smith (@jane_smith)</option>
-                    <option value="3">bob_wilson (@bob_wilson)</option>
+                    ${usersOptions}
                 </select>
             </div>
             <div class="form-row">
@@ -105,9 +126,55 @@ function submitAddTicket(event) {
     const formData = new FormData(event.target);
     const ticketData = Object.fromEntries(formData);
     
-    console.log('Creating ticket:', ticketData);
-    showNotification('Ticket created successfully!', 'success');
-    closeModal();
+    // Show loading state
+    const submitBtn = document.querySelector('button[form="addTicketForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    }
+    
+    // Call backend API to create ticket
+    const token = localStorage.getItem('token');
+    
+    fetch('/.netlify/functions/tickets', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            action: 'create',
+            userId: ticketData.userId,
+            subject: ticketData.subject,
+            category: ticketData.category,
+            priority: ticketData.priority,
+            status: ticketData.status || 'open',
+            orderId: ticketData.orderId || null,
+            message: ticketData.message || 'Ticket created by admin'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message || 'Ticket created successfully!', 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to create ticket', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-plus"></i> Create Ticket';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Create ticket error:', error);
+        showNotification('Failed to create ticket. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-plus"></i> Create Ticket';
+        }
+    });
 }
 
 // View ticket
@@ -188,10 +255,53 @@ function viewTicket(ticketId) {
     createModal(`Ticket #${ticketId}`, content, actions);
 }
 
-function submitReplyTicket(event, ticketId) {
+async function submitReplyTicket(event, ticketId) {
     event.preventDefault();
-    showNotification(`Reply sent to ticket #${ticketId}`, 'success');
-    closeModal();
+    const formData = new FormData(event.target);
+    const message = formData.get('message');
+    
+    const submitBtn = document.querySelector('button[form="replyTicketForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'reply',
+                ticketId: ticketId,
+                message: message,
+                isAdmin: true
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Reply sent to ticket #${ticketId}`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to send reply', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-reply"></i> Send Reply';
+            }
+        }
+    } catch (error) {
+        console.error('Reply ticket error:', error);
+        showNotification('Failed to send reply. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-reply"></i> Send Reply';
+        }
+    }
 }
 
 // Reply to ticket (quick reply)
@@ -237,10 +347,55 @@ function replyTicket(ticketId) {
     createModal(`Reply to Ticket #${ticketId}`, content, actions);
 }
 
-function submitQuickReply(event, ticketId) {
+async function submitQuickReply(event, ticketId) {
     event.preventDefault();
-    showNotification(`Reply sent to ticket #${ticketId}`, 'success');
-    closeModal();
+    const formData = new FormData(event.target);
+    const message = formData.get('message');
+    const autoClose = formData.get('autoClose') === 'on';
+    
+    const submitBtn = document.querySelector('button[form="quickReplyForm"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'reply',
+                ticketId: ticketId,
+                message: message,
+                isAdmin: true,
+                autoClose: autoClose
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Reply sent to ticket #${ticketId}`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to send reply', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-reply"></i> Send Reply';
+            }
+        }
+    } catch (error) {
+        console.error('Quick reply error:', error);
+        showNotification('Failed to send reply. Please try again.', 'error');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-reply"></i> Send Reply';
+        }
+    }
 }
 
 function insertQuickResponse(text) {
@@ -258,13 +413,63 @@ function insertQuickResponse(text) {
 }
 
 // Update ticket status
-function updateTicketStatus(ticketId, status) {
-    showNotification(`Ticket #${ticketId} status updated to ${status}`, 'success');
+async function updateTicketStatus(ticketId, status) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'update-status',
+                ticketId: ticketId,
+                status: status
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Ticket #${ticketId} status updated to ${status}`, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to update status', 'error');
+        }
+    } catch (error) {
+        console.error('Update status error:', error);
+        showNotification('Failed to update status. Please try again.', 'error');
+    }
 }
 
 // Assign ticket
-function assignTicket(ticketId, assignee) {
-    showNotification(`Ticket #${ticketId} assigned to ${assignee}`, 'success');
+async function assignTicket(ticketId, assignee) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'assign',
+                ticketId: ticketId,
+                assignee: assignee
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Ticket #${ticketId} assigned to ${assignee}`, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to assign ticket', 'error');
+        }
+    } catch (error) {
+        console.error('Assign ticket error:', error);
+        showNotification('Failed to assign ticket. Please try again.', 'error');
+    }
 }
 
 // Close ticket
@@ -289,9 +494,33 @@ function closeTicket(ticketId) {
     createModal('Close Ticket', content, actions);
 }
 
-function confirmCloseTicket(ticketId) {
-    showNotification(`Ticket #${ticketId} has been closed`, 'success');
-    closeModal();
+async function confirmCloseTicket(ticketId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'close',
+                ticketId: ticketId
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Ticket #${ticketId} has been closed`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to close ticket', 'error');
+        }
+    } catch (error) {
+        console.error('Close ticket error:', error);
+        showNotification('Failed to close ticket. Please try again.', 'error');
+    }
 }
 
 // Delete ticket
@@ -316,9 +545,32 @@ function deleteTicket(ticketId) {
     createModal('Delete Ticket', content, actions);
 }
 
-function confirmDeleteTicket(ticketId) {
-    showNotification(`Ticket #${ticketId} deleted successfully`, 'success');
-    closeModal();
+async function confirmDeleteTicket(ticketId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                ticketId: ticketId
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            showNotification(`Ticket #${ticketId} deleted successfully`, 'success');
+            closeModal();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            showNotification(data.error || 'Failed to delete ticket', 'error');
+        }
+    } catch (error) {
+        console.error('Delete ticket error:', error);
+        showNotification('Failed to delete ticket. Please try again.', 'error');
+    }
 }
 
 // Show unread tickets
@@ -339,6 +591,97 @@ function showUnread() {
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     handleSearch('ticketSearch', 'ticketsTable');
+    await loadTickets();
 });
+
+// Load real tickets from database
+async function loadTickets() {
+    const tbody = document.getElementById('ticketsTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading tickets...</td></tr>';
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.tickets && data.tickets.length > 0) {
+            tbody.innerHTML = '';
+            
+            data.tickets.forEach(ticket => {
+                const createdDate = new Date(ticket.created_at).toLocaleString();
+                const updatedDate = ticket.updated_at ? new Date(ticket.updated_at).toLocaleString() : createdDate;
+                const isUnread = ticket.status === 'open' || ticket.status === 'pending';
+                
+                const categoryClass = ticket.category === 'orders' ? 'orders' :
+                                    ticket.category === 'payment' ? 'payment' :
+                                    ticket.category === 'technical' ? 'technical' : 'other';
+                
+                const row = `
+                    <tr ${isUnread ? 'class="unread-ticket"' : ''}>
+                        <td><input type="checkbox" class="ticket-checkbox"></td>
+                        <td>${ticket.id}</td>
+                        <td>${ticket.users?.username || 'Unknown'}</td>
+                        <td>
+                            <div class="ticket-subject">
+                                <span class="category-badge ${categoryClass}">${ticket.category || 'General'}</span>
+                                <a href="#" onclick="viewTicket('${ticket.id}')">${ticket.subject}</a>
+                            </div>
+                        </td>
+                        <td>
+                            <select class="inline-select status-select" onchange="updateTicketStatus('${ticket.id}', this.value)">
+                                <option ${ticket.status === 'open' ? 'selected' : ''}>open</option>
+                                <option ${ticket.status === 'pending' ? 'selected' : ''}>pending</option>
+                                <option ${ticket.status === 'answered' ? 'selected' : ''}>answered</option>
+                                <option ${ticket.status === 'closed' ? 'selected' : ''}>closed</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="inline-select assignee-select" onchange="assignTicket('${ticket.id}', this.value)">
+                                <option ${!ticket.assigned_to ? 'selected' : ''}>Unassigned</option>
+                                <option ${ticket.assigned_to === 'admin' ? 'selected' : ''}>Admin</option>
+                                <option ${ticket.assigned_to === 'support1' ? 'selected' : ''}>Support 1</option>
+                                <option ${ticket.assigned_to === 'support2' ? 'selected' : ''}>Support 2</option>
+                            </select>
+                        </td>
+                        <td>${createdDate}</td>
+                        <td>${updatedDate}</td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="viewTicket('${ticket.id}')">View</a>
+                                    <a href="#" onclick="replyTicket('${ticket.id}')">Reply</a>
+                                    <a href="#" onclick="closeTicket('${ticket.id}')">Close</a>
+                                    <a href="#" onclick="deleteTicket('${ticket.id}')">Delete</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+            
+            // Update pagination
+            const paginationInfo = document.getElementById('paginationInfo');
+            if (paginationInfo) {
+                paginationInfo.textContent = `Showing 1-${Math.min(data.tickets.length, 50)} of ${data.tickets.length}`;
+            }
+        } else {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #888;">No tickets found</td></tr>';
+        }
+    } catch (error) {
+        console.error('Load tickets error:', error);
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #ef4444;">Failed to load tickets. Please refresh the page.</td></tr>';
+    }
+}

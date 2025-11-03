@@ -29,9 +29,11 @@
                     <li><a href="order.html" class="nav-link">Order Now</a></li>
                     <li><a href="addfunds.html" class="nav-link">Add Funds</a></li>
                     <li><a href="api.html" class="nav-link">API</a></li>
+                    <li><a href="api-dashboard.html" class="nav-link active">API Dashboard</a></li>
                     <li><a href="tickets.html" class="nav-link">Tickets</a></li>
                     <li><a href="contact.html" class="nav-link">Contact</a></li>
-                    <li><a href="api-dashboard.html" class="nav-link btn-primary active">API Dashboard</a></li>
+                    <!-- Auth navigation dynamically updated by main.js -->
+                    <li id="authNavItem"><a href="signin.html" class="nav-link btn-primary">Sign In</a></li>
                 </ul>
             </div>
         </div>
@@ -204,21 +206,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="providerApiUrl">API URL *</label>
-                    <input type="url" id="providerApiUrl" placeholder="https://g1618.com" required>
-                    <span class="form-hint">Provider's API endpoint URL</span>
-                </div>
-
-                <div class="form-group">
                     <label for="providerApiKey">API Key *</label>
                     <input type="text" id="providerApiKey" placeholder="2ea09ee801c709411af403" required>
                     <span class="form-hint">Your API key from the provider's dashboard</span>
-                </div>
-
-                <div class="form-group">
-                    <label for="priceMarkup">Default Markup (%)</label>
-                    <input type="number" id="priceMarkup" placeholder="15" min="0" step="0.1" value="15" required>
-                    <span class="form-hint">Add this percentage to all provider rates</span>
                 </div>
 
                 <div class="modal-actions">

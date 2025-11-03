@@ -78,115 +78,117 @@ function copyApiKey() {
     });
 }
 
-// Local storage for API keys and providers
-const STORAGE_KEYS = {
-    API_KEYS: 'botzzz773_api_keys',
-    PROVIDERS: 'botzzz773_providers',
-    STATS: 'botzzz773_api_stats'
-};
-
-// Get data from localStorage
-function getStorageData(key) {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
-}
-
-// Save data to localStorage
-function setStorageData(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
-}
-
-// Initialize stats
-function initializeStats() {
-    let stats = getStorageData(STORAGE_KEYS.STATS);
-    if (!stats || !stats.totalRequests) {
-        stats = {
-            totalRequests: 0,
-            totalOrders: 0,
-            totalSpent: 0
-        };
-        setStorageData(STORAGE_KEYS.STATS, stats);
+// Update dashboard stats from backend
+async function updateDashboardStats() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const response = await fetch('/.netlify/functions/dashboard', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('totalRequests').textContent = (data.totalRequests || 0).toLocaleString();
+            document.getElementById('totalOrders').textContent = (data.totalOrders || 0).toLocaleString();
+            document.getElementById('activeProviders').textContent = (data.activeProviders || 0);
+            document.getElementById('totalSpent').textContent = '$' + (data.totalSpent || 0).toFixed(2);
+        }
+    } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+        // Set default values on error
+        document.getElementById('totalRequests').textContent = '0';
+        document.getElementById('totalOrders').textContent = '0';
+        document.getElementById('activeProviders').textContent = '0';
+        document.getElementById('totalSpent').textContent = '$0.00';
     }
-    return stats;
 }
 
-// Update dashboard stats
-function updateDashboardStats() {
-    const stats = initializeStats();
-    const providers = getStorageData(STORAGE_KEYS.PROVIDERS);
-    
-    document.getElementById('totalRequests').textContent = stats.totalRequests.toLocaleString();
-    document.getElementById('totalOrders').textContent = stats.totalOrders.toLocaleString();
-    document.getElementById('activeProviders').textContent = providers.length;
-    document.getElementById('totalSpent').textContent = '$' + stats.totalSpent.toFixed(2);
-}
-
-// Render API keys list
-function renderApiKeys() {
-    const apiKeys = getStorageData(STORAGE_KEYS.API_KEYS);
+// Render API keys list from backend
+async function renderApiKeys() {
     const container = document.getElementById('apiKeysList');
     
-    if (apiKeys.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <h3>No API Keys Yet</h3>
-                <p>Generate your first API key to start integrating our services</p>
-                <button class="btn-primary" onclick="document.getElementById('generateKeyBtn').click()">Generate API Key</button>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = apiKeys.map(key => {
-        // SECURITY: Decrypt key for display (masked)
-        const decryptedKey = decryptApiKey(key.key);
-        const maskedKey = decryptedKey.substring(0, 20) + '••••••••••••';
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            container.innerHTML = '<div class="empty-state"><p>Please login to view API keys</p></div>';
+            return;
+        }
         
-        return `
-        <div class="api-key-card">
-            <div class="api-key-header">
-                <div class="api-key-info">
-                    <h3>${key.name}</h3>
-                    <span class="api-key-date">Created ${new Date(key.created).toLocaleDateString()}</span>
+        const response = await fetch('/.netlify/functions/api-keys', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        const apiKeys = data.keys || data.apiKeys || [];
+        
+        if (apiKeys.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <h3>No API Keys Yet</h3>
+                    <p>Generate your first API key to start integrating our services</p>
+                    <button class="btn-primary" onclick="document.getElementById('generateKeyBtn').click()">Generate API Key</button>
                 </div>
-                <div class="api-key-actions">
-                    <button class="btn-icon" onclick="copyKeyToClipboard('${key.key}')" title="Copy API Key">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                        </svg>
-                    </button>
-                    <button class="btn-icon danger" onclick="deleteApiKey('${key.id}')" title="Delete API Key">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                    </button>
+            `;
+            return;
+        }
+        
+        container.innerHTML = apiKeys.map(key => {
+            // SECURITY: Decrypt key for display (masked)
+            const decryptedKey = decryptApiKey(key.key);
+            const maskedKey = decryptedKey.substring(0, 20) + '••••••••••••';
+            
+            return `
+            <div class="api-key-card">
+                <div class="api-key-header">
+                    <div class="api-key-info">
+                        <h3>${key.name}</h3>
+                        <span class="api-key-date">Created ${new Date(key.created).toLocaleDateString()}</span>
+                    </div>
+                    <div class="api-key-actions">
+                        <button class="btn-icon" onclick="copyKeyToClipboard('${key.key}')" title="Copy API Key">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                        </button>
+                        <button class="btn-icon danger" onclick="deleteApiKey('${key.id}')" title="Delete API Key">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="api-key-display-hidden">
+                    <code>${maskedKey}</code>
+                </div>
+                <div class="api-key-stats">
+                    <div class="key-stat">
+                        <span class="key-stat-label">Requests</span>
+                        <span class="key-stat-value">${key.requests || 0}</span>
+                    </div>
+                    <div class="key-stat">
+                        <span class="key-stat-label">Last Used</span>
+                        <span class="key-stat-value">${key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never'}</span>
+                    </div>
+                </div>
+                <div class="api-key-permissions">
+                    ${key.permissions.map(p => `<span class="permission-badge">${p}</span>`).join('')}
                 </div>
             </div>
-            <div class="api-key-display-hidden">
-                <code>${maskedKey}</code>
-            </div>
-            <div class="api-key-stats">
-                <div class="key-stat">
-                    <span class="key-stat-label">Requests</span>
-                    <span class="key-stat-value">${key.requests || 0}</span>
-                </div>
-                <div class="key-stat">
-                    <span class="key-stat-label">Last Used</span>
-                    <span class="key-stat-value">${key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never'}</span>
-                </div>
-            </div>
-            <div class="api-key-permissions">
-                ${key.permissions.map(p => `<span class="permission-badge">${p}</span>`).join('')}
-            </div>
-        </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Failed to load API keys:', error);
+        container.innerHTML = '<div class="empty-state"><p>Failed to load API keys</p></div>';
+    }
 }
 
 // Copy key to clipboard with decryption
@@ -202,115 +204,171 @@ function copyKeyToClipboard(encryptedKey) {
     });
 }
 
-// Delete API key
-function deleteApiKey(keyId) {
+// Delete API key from backend
+async function deleteApiKey(keyId) {
     if (!confirm('Are you sure you want to delete this API key? This action cannot be undone.')) {
         return;
     }
     
-    let apiKeys = getStorageData(STORAGE_KEYS.API_KEYS);
-    apiKeys = apiKeys.filter(k => k.id !== keyId);
-    setStorageData(STORAGE_KEYS.API_KEYS, apiKeys);
-    
-    showMessage('API key deleted successfully', 'success');
-    renderApiKeys();
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login to delete API keys');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/api-keys', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ keyId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('API key deleted successfully', 'success');
+            renderApiKeys();
+        } else {
+            showMessage(data.error || 'Failed to delete API key', 'error');
+        }
+    } catch (error) {
+        console.error('Delete API key error:', error);
+        showMessage('Failed to delete API key', 'error');
+    }
 }
 
-// Render providers list
-function renderProviders() {
-    const providers = getStorageData(STORAGE_KEYS.PROVIDERS);
+// Render providers list from backend
+async function renderProviders() {
     const container = document.getElementById('providersList');
     
-    if (providers.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-                <h3>No Providers Connected</h3>
-                <p>Add your first provider to import services and automate order fulfillment</p>
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            container.innerHTML = '<div class="empty-state"><p>Please login to view providers</p></div>';
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/providers', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        const providers = data.providers || [];
+        
+        if (providers.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <h3>No Providers Connected</h3>
+                    <p>Add your first provider to import services and automate order fulfillment</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = providers.map(provider => `
+            <div class="provider-card">
+                <div class="provider-header">
+                    <div class="provider-info">
+                        <h3>${provider.name}</h3>
+                        <span class="provider-url">${provider.api_url || provider.apiUrl}</span>
+                    </div>
+                    <span class="provider-status ${provider.status}">
+                        ${provider.status === 'active' ? '● Active' : '● Inactive'}
+                    </span>
+                </div>
+                <div class="provider-stats-grid">
+                    <div class="provider-stat">
+                        <span class="provider-stat-label">Services</span>
+                        <span class="provider-stat-value">${provider.services_count || provider.servicesCount || 0}</span>
+                    </div>
+                    <div class="provider-stat">
+                        <span class="provider-stat-label">Orders</span>
+                        <span class="provider-stat-value">${provider.orders_count || provider.ordersCount || 0}</span>
+                    </div>
+                    <div class="provider-stat">
+                        <span class="provider-stat-label">Markup</span>
+                        <span class="provider-stat-value">${provider.markup}%</span>
+                    </div>
+                    <div class="provider-stat">
+                        <span class="provider-stat-label">Added</span>
+                        <span class="provider-stat-value">${new Date(provider.created_at || provider.created).toLocaleDateString()}</span>
+                    </div>
+                </div>
+                <div class="provider-actions">
+                    <button class="btn-secondary btn-sm" onclick="syncProvider('${provider.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        Sync Services
+                    </button>
+                    <button class="btn-secondary btn-sm" onclick="editProvider('${provider.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        Edit
+                    </button>
+                    <button class="btn-icon danger" onclick="deleteProvider('${provider.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
-        `;
-        return;
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load providers:', error);
+        container.innerHTML = '<div class="empty-state"><p>Failed to load providers</p></div>';
     }
-    
-    container.innerHTML = providers.map(provider => `
-        <div class="provider-card">
-            <div class="provider-header">
-                <div class="provider-info">
-                    <h3>${provider.name}</h3>
-                    <span class="provider-url">${provider.apiUrl}</span>
-                </div>
-                <span class="provider-status ${provider.status}">
-                    ${provider.status === 'active' ? '● Active' : '● Inactive'}
-                </span>
-            </div>
-            <div class="provider-stats-grid">
-                <div class="provider-stat">
-                    <span class="provider-stat-label">Services</span>
-                    <span class="provider-stat-value">${provider.servicesCount || 0}</span>
-                </div>
-                <div class="provider-stat">
-                    <span class="provider-stat-label">Orders</span>
-                    <span class="provider-stat-value">${provider.ordersCount || 0}</span>
-                </div>
-                <div class="provider-stat">
-                    <span class="provider-stat-label">Markup</span>
-                    <span class="provider-stat-value">${provider.markup}%</span>
-                </div>
-                <div class="provider-stat">
-                    <span class="provider-stat-label">Added</span>
-                    <span class="provider-stat-value">${new Date(provider.created).toLocaleDateString()}</span>
-                </div>
-            </div>
-            <div class="provider-actions">
-                <button class="btn-secondary btn-sm" onclick="syncProvider('${provider.id}')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 4 23 10 17 10"/>
-                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                    </svg>
-                    Sync Services
-                </button>
-                <button class="btn-secondary btn-sm" onclick="editProvider('${provider.id}')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    Edit
-                </button>
-                <button class="btn-icon danger" onclick="deleteProvider('${provider.id}')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    `).join('');
 }
 
-// Sync provider services
-function syncProvider(providerId) {
-    const providers = getStorageData(STORAGE_KEYS.PROVIDERS);
-    const provider = providers.find(p => p.id === providerId);
-    
-    if (!provider) return;
-    
-    showMessage('Syncing services from ' + provider.name + '...', 'info');
-    
-    // Simulate API call to provider
-    setTimeout(() => {
-        const randomServices = Math.floor(Math.random() * 50) + 50;
-        provider.servicesCount = randomServices;
-        provider.lastSync = new Date().toISOString();
+// Sync provider services with backend
+async function syncProvider(providerId) {
+    try {
+        showMessage('Syncing services...', 'info');
         
-        setStorageData(STORAGE_KEYS.PROVIDERS, providers);
-        renderProviders();
-        showMessage(`Successfully synced ${randomServices} services from ${provider.name}`, 'success');
-    }, 2000);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login to sync providers');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/providers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'sync',
+                providerId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage(`Successfully synced ${data.servicesCount || 0} services`, 'success');
+            renderProviders();
+            updateDashboardStats();
+        } else {
+            showMessage(data.error || 'Failed to sync provider', 'error');
+        }
+    } catch (error) {
+        console.error('Sync provider error:', error);
+        showMessage('Failed to sync provider', 'error');
+    }
 }
 
 // Edit provider
@@ -318,20 +376,41 @@ function editProvider(providerId) {
     showMessage('Edit provider functionality coming soon', 'info');
 }
 
-// Delete provider
-function deleteProvider(providerId) {
+// Delete provider from backend
+async function deleteProvider(providerId) {
     if (!confirm('Are you sure you want to delete this provider? All imported services will be removed.')) {
         return;
     }
     
-    let providers = getStorageData(STORAGE_KEYS.PROVIDERS);
-    const provider = providers.find(p => p.id === providerId);
-    providers = providers.filter(p => p.id !== providerId);
-    setStorageData(STORAGE_KEYS.PROVIDERS, providers);
-    
-    showMessage(`Provider "${provider.name}" deleted successfully`, 'success');
-    renderProviders();
-    updateDashboardStats();
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login to delete providers');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/providers', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ providerId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showMessage('Provider deleted successfully', 'success');
+            renderProviders();
+            updateDashboardStats();
+        } else {
+            showMessage(data.error || 'Failed to delete provider', 'error');
+        }
+    } catch (error) {
+        console.error('Delete provider error:', error);
+        showMessage('Failed to delete provider', 'error');
+    }
 }
 
 // Event listeners
@@ -347,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Generate API Key form
-    document.getElementById('generateKeyForm').addEventListener('submit', function(e) {
+    document.getElementById('generateKeyForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const keyName = document.getElementById('keyName').value;
@@ -359,31 +438,48 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        const newKey = {
-            id: 'key_' + Date.now(),
-            name: keyName,
-            key: generateRandomKey(),
-            permissions: permissions,
-            created: new Date().toISOString(),
-            requests: 0,
-            lastUsed: null
-        };
-        
-        const apiKeys = getStorageData(STORAGE_KEYS.API_KEYS);
-        apiKeys.push(newKey);
-        setStorageData(STORAGE_KEYS.API_KEYS, apiKeys);
-        
-        // Show the key in modal
-        document.getElementById('generatedApiKey').textContent = newKey.key;
-        
-        closeModal('generateKeyModal');
-        openModal('apiKeyModal');
-        
-        // Reset form
-        document.getElementById('generateKeyForm').reset();
-        
-        // Re-render keys
-        renderApiKeys();
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login to generate API keys');
+                window.location.href = '/signin.html';
+                return;
+            }
+            
+            const response = await fetch('/.netlify/functions/api-keys', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    action: 'create',
+                    name: keyName,
+                    permissions: permissions
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show the key in modal
+                document.getElementById('generatedApiKey').textContent = data.key;
+                
+                closeModal('generateKeyModal');
+                openModal('apiKeyModal');
+                
+                // Reset form
+                document.getElementById('generateKeyForm').reset();
+                
+                // Re-render keys
+                renderApiKeys();
+            } else {
+                showMessage(data.error || 'Failed to generate API key', 'error');
+            }
+        } catch (error) {
+            console.error('Generate API key error:', error);
+            showMessage('Failed to generate API key', 'error');
+        }
     });
     
     // Add Provider button
@@ -396,9 +492,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const providerName = document.getElementById('providerName').value;
-        const providerApiUrl = document.getElementById('providerApiUrl').value;
         const providerApiKey = document.getElementById('providerApiKey').value;
-        const priceMarkup = parseFloat(document.getElementById('priceMarkup').value);
         
         // Show loading
         const submitBtn = this.querySelector('button[type="submit"]');
@@ -408,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             // Get auth token
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('token');
             if (!token) {
                 alert('Please login to add providers');
                 window.location.href = '/signin.html';
@@ -425,9 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     action: 'create',
                     name: providerName,
-                    apiUrl: providerApiUrl,
                     apiKey: providerApiKey,
-                    markup: priceMarkup,
                     status: 'active'
                 })
             });
@@ -470,3 +562,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+

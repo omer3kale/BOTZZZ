@@ -90,17 +90,63 @@ let tickets = [
     }
 ];
 
-// Load tickets from localStorage if available
-function loadTickets() {
-    const stored = localStorage.getItem('SUPPORT_TICKETS');
-    if (stored) {
-        tickets = JSON.parse(stored);
+// Load tickets from backend
+async function loadTickets() {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) return;
+        
+        const response = await fetch('/.netlify/functions/tickets', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        if (data.success && data.tickets) {
+            tickets = data.tickets;
+        }
+    } catch (error) {
+        console.error('Failed to load tickets:', error);
+        // Keep sample tickets on error
     }
 }
 
-// Save tickets to localStorage
-function saveTickets() {
-    localStorage.setItem('SUPPORT_TICKETS', JSON.stringify(tickets));
+// Save new ticket to backend
+async function saveTicket(ticketData) {
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Please login to submit tickets');
+            window.location.href = '/signin.html';
+            return false;
+        }
+        
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'create',
+                ...ticketData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Add new ticket to local array
+            tickets.unshift(data.ticket);
+            return true;
+        } else {
+            alert(data.error || 'Failed to create ticket');
+            return false;
+        }
+    } catch (error) {
+        console.error('Failed to save ticket:', error);
+        alert('Failed to create ticket. Please try again.');
+        return false;
+    }
 }
 
 // Initialize
@@ -242,8 +288,8 @@ function renderTicketDetails() {
     `;
 }
 
-// Send reply
-function sendReply() {
+// Send reply to backend
+async function sendReply() {
     const replyMessage = document.getElementById('replyMessage');
     const message = replyMessage.value.trim();
 
@@ -252,40 +298,98 @@ function sendReply() {
         return;
     }
 
-    const newMessage = {
-        id: currentTicket.messages.length + 1,
-        author: 'You',
-        role: 'user',
-        content: message,
-        date: new Date().toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    };
-
-    currentTicket.messages.push(newMessage);
-    currentTicket.updatedAt = newMessage.date;
-    saveTickets();
-    renderTicketDetails();
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Please login to reply to tickets');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'reply',
+                ticketId: currentTicket.id,
+                message: message
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const newMessage = {
+                id: currentTicket.messages.length + 1,
+                author: 'You',
+                role: 'user',
+                content: message,
+                date: new Date().toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            };
+            
+            currentTicket.messages.push(newMessage);
+            currentTicket.updatedAt = newMessage.date;
+            renderTicketDetails();
+            replyMessage.value = '';
+        } else {
+            alert(data.error || 'Failed to send reply');
+        }
+    } catch (error) {
+        console.error('Failed to send reply:', error);
+        alert('Failed to send reply. Please try again.');
+    }
 }
 
-// Close ticket
-function closeTicket() {
-    if (confirm('Are you sure you want to close this ticket?')) {
-        currentTicket.status = 'closed';
-        currentTicket.updatedAt = new Date().toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
+// Close ticket via backend
+async function closeTicket() {
+    if (!confirm('Are you sure you want to close this ticket?')) return;
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            alert('Please login to close tickets');
+            return;
+        }
+        
+        const response = await fetch('/.netlify/functions/tickets', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'close',
+                ticketId: currentTicket.id
+            })
         });
-        saveTickets();
-        renderTickets();
-        renderTicketDetails();
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentTicket.status = 'closed';
+            currentTicket.updatedAt = new Date().toLocaleString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            renderTickets();
+            renderTicketDetails();
+        } else {
+            alert(data.error || 'Failed to close ticket');
+        }
+    } catch (error) {
+        console.error('Failed to close ticket:', error);
+        alert('Failed to close ticket. Please try again.');
     }
 }
 
@@ -349,7 +453,7 @@ function setupCategoryChange() {
 // Setup new ticket form
 function setupNewTicketForm() {
     const form = document.getElementById('newTicketForm');
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const category = document.getElementById('ticketCategory').value;
@@ -358,44 +462,24 @@ function setupNewTicketForm() {
         const message = document.getElementById('ticketMessage').value;
         const orderId = document.getElementById('ticketOrderId').value;
 
-        // Generate ticket ID
-        const ticketId = `TKT-${Math.floor(10000 + Math.random() * 90000)}`;
-        const now = new Date().toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        const newTicket = {
-            id: ticketId,
+        const ticketData = {
             subject: subject,
             category: category.charAt(0).toUpperCase() + category.slice(1),
             subcategory: subcategory || null,
-            status: 'open',
             orderId: orderId || null,
-            createdAt: now,
-            updatedAt: now,
-            messages: [
-                {
-                    id: 1,
-                    author: 'You',
-                    role: 'user',
-                    content: message,
-                    date: now
-                }
-            ]
+            message: message
         };
 
-        tickets.unshift(newTicket);
-        saveTickets();
-        closeNewTicketModal();
-        renderTickets();
-        selectTicket(ticketId);
-
-        // Show success message
-        alert(`Ticket ${ticketId} created successfully!`);
+        const success = await saveTicket(ticketData);
+        
+        if (success) {
+            closeNewTicketModal();
+            renderTickets();
+            if (tickets.length > 0) {
+                selectTicket(tickets[0].id);
+            }
+            alert('Ticket created successfully!');
+        }
     });
 }
 

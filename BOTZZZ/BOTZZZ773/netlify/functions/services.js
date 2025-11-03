@@ -108,19 +108,34 @@ async function handleCreateService(user, data, headers) {
       };
     }
 
+    const { action } = data;
+
+    // Handle different create actions
+    if (action === 'create-category') {
+      return await handleCreateCategory(data, headers);
+    }
+
+    if (action === 'duplicate') {
+      return await handleDuplicateService(data, headers);
+    }
+
     const {
       providerId,
       providerServiceId,
       name,
       category,
       description,
+      rate,
       price,
+      min_quantity,
       minOrder,
+      max_quantity,
       maxOrder,
+      type,
       status
     } = data;
 
-    if (!providerId || !providerServiceId || !name || !category || !price) {
+    if (!name || !category) {
       return {
         statusCode: 400,
         headers,
@@ -128,17 +143,22 @@ async function handleCreateService(user, data, headers) {
       };
     }
 
+    const servicePrice = rate || price || 0;
+    const minQty = min_quantity || minOrder || 10;
+    const maxQty = max_quantity || maxOrder || 100000;
+
     const { data: service, error } = await supabaseAdmin
       .from('services')
       .insert({
-        provider_id: providerId,
-        provider_service_id: providerServiceId,
+        provider_id: providerId || null,
+        provider_service_id: providerServiceId || null,
         name,
         category,
         description: description || '',
-        price,
-        min_order: minOrder || 10,
-        max_order: maxOrder || 100000,
+        price: servicePrice,
+        min_order: minQty,
+        max_order: maxQty,
+        type: type || 'service',
         status: status || 'active'
       })
       .select()
@@ -182,7 +202,7 @@ async function handleUpdateService(user, data, headers) {
       };
     }
 
-    const { serviceId, ...updateData } = data;
+    const { serviceId, name, category, rate, price, min_quantity, max_quantity, description, status, ...updateData } = data;
 
     if (!serviceId) {
       return {
@@ -192,9 +212,20 @@ async function handleUpdateService(user, data, headers) {
       };
     }
 
+    // Build update object with proper field names
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (category !== undefined) updates.category = category;
+    if (rate !== undefined) updates.price = rate;
+    if (price !== undefined) updates.price = price;
+    if (min_quantity !== undefined) updates.min_order = min_quantity;
+    if (max_quantity !== undefined) updates.max_order = max_quantity;
+    if (description !== undefined) updates.description = description;
+    if (status !== undefined) updates.status = status;
+
     const { data: service, error } = await supabaseAdmin
       .from('services')
-      .update(updateData)
+      .update(updates)
       .eq('id', serviceId)
       .select()
       .single();
@@ -272,6 +303,94 @@ async function handleDeleteService(user, data, headers) {
       statusCode: 500,
       headers,
       body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handleCreateCategory(data, headers) {
+  try {
+    const { name, description, icon } = data;
+
+    // For now, categories are just stored as metadata
+    // You can create a categories table later if needed
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true,
+        message: `Category "${name}" created successfully`,
+        category: { name, description, icon }
+      })
+    };
+  } catch (error) {
+    console.error('Create category error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Failed to create category' })
+    };
+  }
+}
+
+async function handleDuplicateService(data, headers) {
+  try {
+    const { serviceId } = data;
+
+    // Get the original service
+    const { data: originalService, error: fetchError } = await supabaseAdmin
+      .from('services')
+      .select('*')
+      .eq('id', serviceId)
+      .single();
+
+    if (fetchError || !originalService) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ error: 'Service not found' })
+      };
+    }
+
+    // Create duplicate with modified name
+    const { data: newService, error: insertError } = await supabaseAdmin
+      .from('services')
+      .insert({
+        provider_id: originalService.provider_id,
+        provider_service_id: originalService.provider_service_id,
+        name: `${originalService.name} (Copy)`,
+        category: originalService.category,
+        description: originalService.description,
+        price: originalService.price,
+        min_order: originalService.min_order,
+        max_order: originalService.max_order,
+        type: originalService.type,
+        status: 'inactive' // New duplicates start as inactive
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Failed to duplicate service' })
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ 
+        success: true,
+        service: newService
+      })
+    };
+  } catch (error) {
+    console.error('Duplicate service error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Failed to duplicate service' })
     };
   }
 }

@@ -108,8 +108,55 @@
                     </tr>
                 </thead>
                 <tbody id="servicesTableBody">
-                    <!-- Instagram Services -->
-                    <tr>
+                    <!-- Services will be loaded dynamically from database -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid" style="margin-top: 30px;">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-value" id="totalServices">Loading...</div>
+                    <div class="stat-label">Total Services</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-value" id="activeServices">Loading...</div>
+                    <div class="stat-label">Active Services</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-sync"></i>
+                </div>
+                <div class="stat-details">
+                    <div class="stat-label">Last Sync</div>
+                    <div class="update-time" id="lastSync">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="btn-secondary" id="prevPage" disabled>Previous</button>
+            <span class="pagination-info" id="paginationInfo">Loading...</span>
+            <button class="btn-secondary" id="nextPage">Next</button>
+        </div>
+    </main>
+
+    <script src="../js/admin.js"></script>
+    <script src="../js/admin-services.js"></script>
+</body>
+</html>
+
                         <td><input type="checkbox" class="service-checkbox"></td>
                         <td>28734</td>
                         <td>
