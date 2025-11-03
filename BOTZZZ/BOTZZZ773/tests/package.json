@@ -1,0 +1,29 @@
+{
+  "name": "botzzz-test-suite",
+  "version": "1.0.0",
+  "description": "Comprehensive test suite for BOTZZZ SMM Panel",
+  "scripts": {
+    "test": "node tests/run-all-tests.js",
+    "test:api": "node tests/api-tests.js",
+    "test:frontend": "node tests/frontend-tests.js",
+    "test:integration": "node tests/integration-tests.js",
+    "test:watch": "nodemon --watch netlify/functions --watch js --exec npm test",
+    "coverage": "c8 --reporter=html --reporter=text npm test",
+    "coverage:check": "c8 check-coverage --lines 100 --functions 100 --branches 100",
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "nodemon": "^3.0.1",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0"
+  },
+  "keywords": [
+    "smm",
+    "panel",
+    "testing",
+    "api",
+    "integration"
+  ]
+}

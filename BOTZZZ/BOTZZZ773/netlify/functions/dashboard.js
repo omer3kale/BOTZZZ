@@ -1,0 +1,201 @@
+// Dashboard Stats API - Get Dashboard Statistics
+const { supabaseAdmin } = require('./utils/supabase');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+function getUserFromToken(authHeader) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+  const token = authHeader.substring(7);
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+}
+
+exports.handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Content-Type': 'application/json'
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
+  if (event.httpMethod !== 'GET') {
+    return {
+      statusCode: 405,
+      headers,
+      body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
+  const user = getUserFromToken(event.headers.authorization);
+  if (!user) {
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({ error: 'Unauthorized' })
+    };
+  }
+
+  try {
+    if (user.role === 'admin') {
+      return await handleAdminStats(headers);
+    } else {
+      return await handleUserStats(user, headers);
+    }
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+};
+
+async function handleAdminStats(headers) {
+  try {
+    // Get total revenue
+    const { data: revenueData } = await supabaseAdmin
+      .from('payments')
+      .select('amount')
+      .eq('status', 'completed');
+    
+    const totalRevenue = revenueData?.reduce((sum, p) => sum + parseFloat(p.amount), 0) || 0;
+
+    // Get total orders
+    const { count: totalOrders } = await supabaseAdmin
+      .from('orders')
+      .select('*', { count: 'exact', head: true });
+
+    // Get total users
+    const { count: totalUsers } = await supabaseAdmin
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+
+    // Get open tickets
+    const { count: openTickets } = await supabaseAdmin
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'open');
+
+    // Get recent orders
+    const { data: recentOrders } = await supabaseAdmin
+      .from('orders')
+      .select(`
+        *,
+        user:users(id, username, email),
+        service:services(name)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    // Get revenue by day (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const { data: recentRevenue } = await supabaseAdmin
+      .from('payments')
+      .select('amount, created_at')
+      .eq('status', 'completed')
+      .gte('created_at', sevenDaysAgo.toISOString());
+
+    // Group by day
+    const revenueByDay = {};
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      revenueByDay[dateStr] = 0;
+    }
+
+    recentRevenue?.forEach(payment => {
+      const date = payment.created_at.split('T')[0];
+      if (revenueByDay[date] !== undefined) {
+        revenueByDay[date] += parseFloat(payment.amount);
+      }
+    });
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        stats: {
+          totalRevenue: totalRevenue.toFixed(2),
+          totalOrders: totalOrders || 0,
+          totalUsers: totalUsers || 0,
+          openTickets: openTickets || 0
+        },
+        recentOrders: recentOrders || [],
+        revenueChart: revenueByDay
+      })
+    };
+  } catch (error) {
+    console.error('Admin stats error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+async function handleUserStats(user, headers) {
+  try {
+    // Get user balance
+    const { data: userData } = await supabaseAdmin
+      .from('users')
+      .select('balance')
+      .eq('id', user.userId)
+      .single();
+
+    // Get user's total spent
+    const { data: orders } = await supabaseAdmin
+      .from('orders')
+      .select('charge')
+      .eq('user_id', user.userId);
+
+    const totalSpent = orders?.reduce((sum, o) => sum + parseFloat(o.charge), 0) || 0;
+
+    // Get user's order count
+    const { count: orderCount } = await supabaseAdmin
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.userId);
+
+    // Get user's open tickets
+    const { count: openTickets } = await supabaseAdmin
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.userId)
+      .eq('status', 'open');
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        stats: {
+          balance: parseFloat(userData?.balance || 0).toFixed(2),
+          totalSpent: totalSpent.toFixed(2),
+          totalOrders: orderCount || 0,
+          openTickets: openTickets || 0
+        }
+      })
+    };
+  } catch (error) {
+    console.error('User stats error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}

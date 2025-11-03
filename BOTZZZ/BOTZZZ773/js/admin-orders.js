@@ -1,0 +1,388 @@
+// Admin Orders Management with Real Modals
+
+// Modal Helper Functions (shared with admin-users.js pattern)
+function createModal(title, content, actions = '') {
+    const modalHTML = `
+        <div class="modal-overlay" id="activeModal" onclick="if(event.target === this) closeModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+                ${actions ? `<div class="modal-footer">${actions}</div>` : ''}
+            </div>
+        </div>
+    `;
+    
+    const existing = document.getElementById('activeModal');
+    if (existing) existing.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    setTimeout(() => document.getElementById('activeModal').classList.add('show'), 10);
+}
+
+function closeModal() {
+    const modal = document.getElementById('activeModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+// Filter orders by status
+function filterOrders(status) {
+    const rows = document.querySelectorAll('#ordersTableBody tr');
+    const tabs = document.querySelectorAll('.filter-tab');
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    document.querySelector(`[data-status="${status}"]`)?.classList.add('active');
+    
+    if (status === 'all') {
+        rows.forEach(row => row.style.display = '');
+    } else {
+        rows.forEach(row => {
+            if (row.dataset.status === status) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+}
+
+// View order details
+function viewOrder(orderId) {
+    const content = `
+        <div class="user-details">
+            <div class="user-detail-section">
+                <h4><i class="fas fa-shopping-cart"></i> Order Information</h4>
+                <div class="detail-row">
+                    <span class="detail-label">Order ID:</span>
+                    <span class="detail-value">#${orderId}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">User:</span>
+                    <span class="detail-value">codedsmm</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Service:</span>
+                    <span class="detail-value">Instagram Followers</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Link:</span>
+                    <span class="detail-value" style="word-break: break-all; font-size: 12px;">https://www.instagram.com/username/</span>
+                </div>
+            </div>
+            <div class="user-detail-section">
+                <h4><i class="fas fa-chart-bar"></i> Progress</h4>
+                <div class="detail-row">
+                    <span class="detail-label">Quantity:</span>
+                    <span class="detail-value">1,000</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Remains:</span>
+                    <span class="detail-value">350</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Charge:</span>
+                    <span class="detail-value">$12.50</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="status-badge in-progress">In Progress</span>
+                </div>
+            </div>
+            <div class="user-detail-section">
+                <h4><i class="fas fa-clock"></i> Timeline</h4>
+                <div class="detail-row">
+                    <span class="detail-label">Created:</span>
+                    <span class="detail-value">2025-11-02 00:40:48</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Started:</span>
+                    <span class="detail-value">2025-11-02 00:42:15</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Mode:</span>
+                    <span class="detail-value">Auto</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const actions = `
+        <button type="button" class="btn-secondary" onclick="editOrder(${orderId})">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+        <button type="button" class="btn-primary" onclick="closeModal()">Close</button>
+    `;
+    
+    createModal(`Order #${orderId} Details`, content, actions);
+}
+
+// Edit order
+function editOrder(orderId) {
+    const content = `
+        <form id="editOrderForm" onsubmit="submitEditOrder(event, ${orderId})" class="admin-form">
+            <div class="form-group">
+                <label>Service</label>
+                <select name="service" required>
+                    <option value="instagram-followers">Instagram Followers</option>
+                    <option value="instagram-likes">Instagram Likes</option>
+                    <option value="tiktok-views">TikTok Views</option>
+                    <option value="youtube-subs">YouTube Subscribers</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Link</label>
+                <input type="url" name="link" value="https://www.instagram.com/username/" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <span class="detail-label">Quantity:</span>
+                    <input type="number" name="quantity" value="1000" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Charge</label>
+                    <input type="number" name="charge" value="12.50" min="0" step="0.01" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="Pending">Pending</option>
+                    <option value="In progress" selected>In progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Partial">Partial</option>
+                    <option value="Canceled">Canceled</option>
+                </select>
+            </div>
+        </form>
+    `;
+    
+    const actions = `
+        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" form="editOrderForm" class="btn-primary">
+            <i class="fas fa-save"></i> Save Changes
+        </button>
+    `;
+    
+    createModal(`Edit Order #${orderId}`, content, actions);
+}
+
+function submitEditOrder(event, orderId) {
+    event.preventDefault();
+    showNotification(`Order #${orderId} updated successfully!`, 'success');
+    closeModal();
+}
+
+// Refill order
+function refillOrder(orderId) {
+    const content = `
+        <div class="confirmation-message">
+            <i class="fas fa-redo-alt" style="font-size: 48px; color: #FF1494; margin-bottom: 20px;"></i>
+            <p>Refill order #${orderId}?</p>
+            <p style="color: #888; font-size: 14px; margin-top: 10px;">
+                This will add the order back to the queue for processing. The remaining quantity will be fulfilled.
+            </p>
+        </div>
+    `;
+    
+    const actions = `
+        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="confirmRefillOrder(${orderId})">
+            <i class="fas fa-redo-alt"></i> Refill Order
+        </button>
+    `;
+    
+    createModal('Refill Order', content, actions);
+}
+
+function confirmRefillOrder(orderId) {
+    showNotification(`Order #${orderId} refill requested successfully`, 'success');
+    closeModal();
+}
+
+// Cancel order
+function cancelOrder(orderId) {
+    const content = `
+        <div class="confirmation-message danger">
+            <i class="fas fa-times-circle" style="font-size: 48px; color: #ef4444; margin-bottom: 20px;"></i>
+            <p>Cancel order #${orderId}?</p>
+            <p style="color: #888; font-size: 14px; margin-top: 10px;">
+                This will stop the order processing and mark it as canceled. This action cannot be undone.
+            </p>
+        </div>
+    `;
+    
+    const actions = `
+        <button type="button" class="btn-secondary" onclick="closeModal()">Keep Order</button>
+        <button type="button" class="btn-danger" onclick="confirmCancelOrder(${orderId})">
+            <i class="fas fa-times"></i> Cancel Order
+        </button>
+    `;
+    
+    createModal('Cancel Order', content, actions);
+}
+
+function confirmCancelOrder(orderId) {
+    showNotification(`Order #${orderId} has been canceled`, 'success');
+    closeModal();
+}
+
+// Add Order Modal
+function showAddOrderModal() {
+    const content = `
+        <form id="addOrderForm" onsubmit="submitAddOrder(event)" class="admin-form">
+            <div class="form-group">
+                <label>User *</label>
+                <select name="user" required>
+                    <option value="">Select User</option>
+                    <option value="11009">sherry5286</option>
+                    <option value="11008">azenarky</option>
+                    <option value="11007">ami7456727779</option>
+                    <option value="11006">yamh48378</option>
+                    <option value="11005">jj1302524</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Service *</label>
+                <select name="service" required>
+                    <option value="">Select Service</option>
+                    <optgroup label="Instagram">
+                        <option value="ig-followers">Instagram Followers</option>
+                        <option value="ig-likes">Instagram Likes</option>
+                        <option value="ig-views">Instagram Views</option>
+                    </optgroup>
+                    <optgroup label="TikTok">
+                        <option value="tt-followers">TikTok Followers</option>
+                        <option value="tt-likes">TikTok Likes</option>
+                        <option value="tt-views">TikTok Views</option>
+                    </optgroup>
+                    <optgroup label="YouTube">
+                        <option value="yt-subscribers">YouTube Subscribers</option>
+                        <option value="yt-likes">YouTube Likes</option>
+                        <option value="yt-views">YouTube Views</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Link/Username *</label>
+                <input type="text" name="link" placeholder="https://instagram.com/username or @username" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quantity *</label>
+                    <input type="number" name="quantity" placeholder="1000" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Charge (USD)</label>
+                    <input type="number" name="charge" placeholder="12.50" min="0" step="0.01">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Mode</label>
+                <select name="mode">
+                    <option value="Auto" selected>Auto</option>
+                    <option value="Manual">Manual</option>
+                </select>
+            </div>
+        </form>
+    `;
+    
+    const actions = `
+        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" form="addOrderForm" class="btn-primary">
+            <i class="fas fa-plus"></i> Create Order
+        </button>
+    `;
+    
+    createModal('Add New Order', content, actions);
+}
+
+function submitAddOrder(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const orderData = Object.fromEntries(formData);
+    
+    console.log('Creating order:', orderData);
+    showNotification('Order created successfully!', 'success');
+    closeModal();
+}
+
+// Export Orders
+function exportData(format) {
+    const content = `
+        <div class="confirmation-message">
+            <i class="fas fa-file-${format === 'csv' ? 'csv' : 'pdf'}" style="font-size: 48px; color: #FF1494; margin-bottom: 20px;"></i>
+            <p>Export orders to ${format.toUpperCase()}?</p>
+            <p style="color: #888; font-size: 14px; margin-top: 10px;">
+                This will download all visible orders in ${format.toUpperCase()} format. Current filters will be applied.
+            </p>
+            <div style="background: rgba(255,20,148,0.1); border: 1px solid rgba(255,20,148,0.3); border-radius: 8px; padding: 12px; margin-top: 16px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span style="color: #888;">Total Orders:</span>
+                    <span style="color: #fff; font-weight: 600;">5</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+                    <span style="color: #888;">Date Range:</span>
+                    <span style="color: #fff;">All Time</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const actions = `
+        <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="confirmExport('${format}')">
+            <i class="fas fa-download"></i> Export ${format.toUpperCase()}
+        </button>
+    `;
+    
+    createModal(`Export Orders`, content, actions);
+}
+
+function confirmExport(format) {
+    showNotification(`Exporting orders to ${format.toUpperCase()}...`, 'success');
+    closeModal();
+    
+    // Simulate download
+    setTimeout(() => {
+        showNotification(`Orders exported successfully!`, 'success');
+    }, 1500);
+}
+
+// Initialize search
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof handleSearch === 'function') {
+        handleSearch('orderSearch', 'ordersTable');
+    }
+    
+    // Add filter change listeners
+    const filters = ['dateFilter', 'serviceFilter', 'providerFilter', 'modeFilter'];
+    filters.forEach(filterId => {
+        const filter = document.getElementById(filterId);
+        if (filter) {
+            filter.addEventListener('change', applyFilters);
+        }
+    });
+});
+
+// Apply all filters
+function applyFilters() {
+    const dateFilter = document.getElementById('dateFilter')?.value;
+    const serviceFilter = document.getElementById('serviceFilter')?.value;
+    const providerFilter = document.getElementById('providerFilter')?.value;
+    const modeFilter = document.getElementById('modeFilter')?.value;
+    
+    // In production, this would make an API call with filter parameters
+    console.log('Applying filters:', {
+        date: dateFilter,
+        service: serviceFilter,
+        provider: providerFilter,
+        mode: modeFilter
+    });
+}

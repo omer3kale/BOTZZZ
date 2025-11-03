@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets - BOTZZZ773</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tickets-styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="index.html" class="logo">BOTZZZ<span>773</span></a>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="order.html">Order Now</a></li>
+                    <li><a href="addfunds.html">Add Funds</a></li>
+                    <li><a href="api.html">API</a></li>
+                    <li><a href="tickets.html" class="active">Tickets</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="signin.html" class="btn-signin">Sign In</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="tickets-hero">
+        <div class="container">
+            <h1>Support Tickets</h1>
+            <p>Get help with your orders, payments, and more</p>
+        </div>
+    </section>
+
+    <!-- Tickets Section -->
+    <section class="tickets-section">
+        <div class="container">
+            <div class="tickets-grid">
+                <!-- Left Side - Ticket List -->
+                <div class="tickets-list-container">
+                    <div class="tickets-header">
+                        <h2>My Tickets</h2>
+                        <button class="btn-primary" onclick="openNewTicketModal()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            New Ticket
+                        </button>
+                    </div>
+
+                    <div class="tickets-filter">
+                        <button class="filter-btn active" data-status="all">All</button>
+                        <button class="filter-btn" data-status="open">Open</button>
+                        <button class="filter-btn" data-status="pending">Pending</button>
+                        <button class="filter-btn" data-status="closed">Closed</button>
+                    </div>
+
+                    <div class="tickets-list" id="ticketsList">
+                        <!-- Tickets will be rendered here by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Right Side - Ticket Details -->
+                <div class="ticket-details-container">
+                    <div class="empty-state" id="emptyState">
+                        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <line x1="9" y1="15" x2="15" y2="15"></line>
+                        </svg>
+                        <h3>Select a ticket to view details</h3>
+                        <p>Choose a ticket from the list or create a new one</p>
+                    </div>
+
+                    <div class="ticket-details" id="ticketDetails" style="display: none;">
+                        <!-- Ticket details will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Ticket Modal -->
+    <div class="modal" id="newTicketModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Ticket</h2>
+                <button class="close-btn" onclick="closeNewTicketModal()">&times;</button>
+            </div>
+            <form id="newTicketForm">
+                <div class="form-group">
+                    <label for="ticketCategory">Category *</label>
+                    <select id="ticketCategory" required>
+                        <option value="">Select Category</option>
+                        <option value="orders">Orders</option>
+                        <option value="payment">Payment</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="subcategoryGroup" style="display: none;">
+                    <label for="ticketSubcategory">Subcategory *</label>
+                    <select id="ticketSubcategory">
+                        <option value="">Select Subcategory</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticketSubject">Subject *</label>
+                    <input type="text" id="ticketSubject" placeholder="Brief description of your issue" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticketMessage">Message *</label>
+                    <textarea id="ticketMessage" rows="6" placeholder="Provide detailed information about your issue..." required></textarea>
+                </div>
+
+                <div class="form-group" id="orderIdGroup" style="display: none;">
+                    <label for="ticketOrderId">Order ID (Optional)</label>
+                    <input type="text" id="ticketOrderId" placeholder="e.g., 12345">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeNewTicketModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Submit Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BOTZZZ<span>773</span></h3>
+                    <p>Your trusted SMM panel provider for all social media marketing needs.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="services.html">Services</a></li>
+                        <li><a href="order.html">Order Now</a></li>
+                        <li><a href="api.html">API</a></li>
+                        <li><a href="tickets.html">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="tickets.html">Tickets</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#">Instagram</a>
+                        <a href="#">Twitter</a>
+                        <a href="#">Facebook</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BOTZZZ773. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Authentication check - redirect if not logged in
+        (function() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token || !user) {
+                alert('You must be signed in to access support tickets. Please sign in or create an account.');
+                window.location.href = 'signin.html';
+            }
+        })();
+    </script>
+    <script src="js/tickets.js"></script>
+</body>
+</html>

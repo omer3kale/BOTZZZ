@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - BOTZZZ773 Admin</title>
+    <link rel="stylesheet" href="../css/admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Admin Authentication Protection - MUST BE FIRST -->
+    <script src="../js/admin-auth.js"></script>
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-logo">BOTZZZ773</div>
+        <div class="admin-header-right">
+            <div class="admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search..." id="reportSearch">
+            </div>
+            <div class="admin-notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">10</span>
+            </div>
+            <div class="admin-user">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=FF1494&color=000000" alt="Admin">
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <nav class="admin-nav">
+            <a href="index.html" class="admin-nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="users.html" class="admin-nav-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
+            </a>
+            <a href="services.html" class="admin-nav-item">
+                <i class="fas fa-box"></i>
+                <span>Services</span>
+            </a>
+            <a href="payments.html" class="admin-nav-item">
+                <i class="fas fa-credit-card"></i>
+                <span>Payments</span>
+            </a>
+            <a href="tickets.html" class="admin-nav-item">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Tickets</span>
+                <span class="nav-badge">10</span>
+            </a>
+            <a href="reports.html" class="admin-nav-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+            <a href="settings.html" class="admin-nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="admin-page-header">
+            <h1>Reports & Analytics</h1>
+            <div class="page-actions">
+                <select class="filter-select" id="dateRange" onchange="updateCharts()">
+                    <option value="this-month">This month</option>
+                    <option value="last-month">Last month</option>
+                    <option value="last-7-days">Last 7 days</option>
+                    <option value="last-30-days">Last 30 days</option>
+                    <option value="last-90-days">Last 90 days</option>
+                    <option value="this-year">This year</option>
+                </select>
+                <button class="btn-secondary" onclick="exportReport('pdf')">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
+                <button class="btn-primary" onclick="exportReport('csv')">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Report Tabs -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title">Analytics Overview</h3>
+                <div class="chart-tabs">
+                    <button class="chart-tab active" onclick="switchReportTab('payments')">Payments</button>
+                    <button class="chart-tab" onclick="switchReportTab('orders')">Orders</button>
+                    <button class="chart-tab" onclick="switchReportTab('tickets')">Tickets</button>
+                    <button class="chart-tab" onclick="switchReportTab('profits')">Profits</button>
+                    <button class="chart-tab" onclick="switchReportTab('services')">Services</button>
+                    <button class="chart-tab" onclick="switchReportTab('users')">Users</button>
+                    <button class="chart-tab" onclick="switchReportTab('providers')">Providers</button>
+                </div>
+            </div>
+            
+            <!-- Toggle between Chart and Table -->
+            <div class="view-toggle">
+                <button class="toggle-btn active" onclick="toggleView('chart')">
+                    <i class="fas fa-chart-line"></i> Chart
+                </button>
+                <button class="toggle-btn" onclick="toggleView('table')">
+                    <i class="fas fa-table"></i> Table
+                </button>
+            </div>
+
+            <!-- Chart View -->
+            <div class="chart-container" id="chartView">
+                <canvas id="mainChart"></canvas>
+            </div>
+
+            <!-- Table View -->
+            <div class="table-view" id="tableView" style="display: none;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Total Revenue</th>
+                            <th>Orders</th>
+                            <th>New Users</th>
+                            <th>Tickets</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr>
+                            <td>Nov 01, 2025</td>
+                            <td>$1,245.50</td>
+                            <td>312</td>
+                            <td>45</td>
+                            <td>12</td>
+                        </tr>
+                        <tr>
+                            <td>Oct 31, 2025</td>
+                            <td>$2,156.30</td>
+                            <td>428</td>
+                            <td>67</td>
+                            <td>8</td>
+                        </tr>
+                        <tr>
+                            <td>Oct 30, 2025</td>
+                            <td>$1,892.75</td>
+                            <td>385</td>
+                            <td>52</td>
+                            <td>15</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">$12,458.50</div>
+                    <div class="stat-change positive">+12.5% from last period</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value">8,309</div>
+                    <div class="stat-change positive">+8.2% from last period</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">New Users</div>
+                    <div class="stat-value">1,109</div>
+                    <div class="stat-change positive">+15.3% from last period</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon pink">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Avg Order Value</div>
+                    <div class="stat-value">$1.50</div>
+                    <div class="stat-change positive">+3.8% from last period</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/admin.js"></script>
+    <script src="../js/admin-reports.js"></script>
+</body>
+</html>

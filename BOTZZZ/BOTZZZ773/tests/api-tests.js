@@ -1,0 +1,397 @@
+// Test Suite for Netlify Functions
+// Run with: node tests/api-tests.js
+
+const assert = require('assert');
+
+// Test Configuration
+const API_BASE_URL = process.env.API_URL || 'http://localhost:8888/api';
+let authToken = null;
+let testUserId = null;
+
+// Color codes for console output
+const colors = {
+  reset: '\x1b[0m',
+  green: '\x1b[32m',
+  red: '\x1b[31m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m'
+};
+
+function log(color, message) {
+  console.log(color + message + colors.reset);
+}
+
+// Test helper to make API calls
+async function apiCall(endpoint, options = {}) {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    }
+  });
+  
+  const data = await response.json();
+  return { status: response.status, data };
+}
+
+// Test Suite
+const tests = {
+  // Authentication Tests
+  async testSignup() {
+    log(colors.blue, '\n🧪 Testing Signup...');
+    const result = await apiCall('/auth', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'signup',
+        email: `test${Date.now()}@example.com`,
+        username: `testuser${Date.now()}`,
+        password: 'Test123!@#',
+        firstName: 'Test',
+        lastName: 'User'
+      })
+    });
+
+    assert.strictEqual(result.status, 201, 'Should return 201 status');
+    assert.ok(result.data.success, 'Should return success');
+    assert.ok(result.data.token, 'Should return token');
+    assert.ok(result.data.user, 'Should return user data');
+    
+    authToken = result.data.token;
+    testUserId = result.data.user.id;
+    
+    log(colors.green, '✓ Signup test passed');
+    return result.data;
+  },
+
+  async testLogin() {
+    log(colors.blue, '\n🧪 Testing Login...');
+    const result = await apiCall('/auth', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'login',
+        email: 'admin@botzzz.com',
+        password: 'admin123'
+      })
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(result.data.success, 'Should return success');
+    assert.ok(result.data.token, 'Should return token');
+    
+    authToken = result.data.token;
+    
+    log(colors.green, '✓ Login test passed');
+    return result.data;
+  },
+
+  async testVerifyToken() {
+    log(colors.blue, '\n🧪 Testing Token Verification...');
+    const result = await apiCall('/auth', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'verify',
+        token: authToken
+      })
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(result.data.success, 'Should verify token');
+    assert.ok(result.data.user, 'Should return user data');
+    
+    log(colors.green, '✓ Token verification test passed');
+    return result.data;
+  },
+
+  // User Tests
+  async testGetUserProfile() {
+    log(colors.blue, '\n🧪 Testing Get User Profile...');
+    const result = await apiCall('/users', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(result.data.user || result.data.users, 'Should return user data');
+    
+    log(colors.green, '✓ Get user profile test passed');
+    return result.data;
+  },
+
+  async testUpdateUserProfile() {
+    log(colors.blue, '\n🧪 Testing Update User Profile...');
+    const result = await apiCall('/users', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        first_name: 'Updated',
+        last_name: 'Name'
+      })
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(result.data.success, 'Should return success');
+    
+    log(colors.green, '✓ Update user profile test passed');
+    return result.data;
+  },
+
+  // Services Tests
+  async testGetServices() {
+    log(colors.blue, '\n🧪 Testing Get Services...');
+    const result = await apiCall('/services', {
+      method: 'GET'
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(Array.isArray(result.data.services), 'Should return services array');
+    
+    log(colors.green, '✓ Get services test passed');
+    return result.data;
+  },
+
+  // Orders Tests
+  async testGetOrders() {
+    log(colors.blue, '\n🧪 Testing Get Orders...');
+    const result = await apiCall('/orders', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(Array.isArray(result.data.orders), 'Should return orders array');
+    
+    log(colors.green, '✓ Get orders test passed');
+    return result.data;
+  },
+
+  // Tickets Tests
+  async testCreateTicket() {
+    log(colors.blue, '\n🧪 Testing Create Ticket...');
+    const result = await apiCall('/tickets', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        subject: 'Test Ticket',
+        category: 'other',
+        priority: 'medium',
+        message: 'This is a test ticket message'
+      })
+    });
+
+    assert.strictEqual(result.status, 201, 'Should return 201 status');
+    assert.ok(result.data.success, 'Should return success');
+    assert.ok(result.data.ticket, 'Should return ticket data');
+    
+    log(colors.green, '✓ Create ticket test passed');
+    return result.data;
+  },
+
+  async testGetTickets() {
+    log(colors.blue, '\n🧪 Testing Get Tickets...');
+    const result = await apiCall('/tickets', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(Array.isArray(result.data.tickets), 'Should return tickets array');
+    
+    log(colors.green, '✓ Get tickets test passed');
+    return result.data;
+  },
+
+  // Contact Form Tests
+  async testContactForm() {
+    log(colors.blue, '\n🧪 Testing Contact Form...');
+    const result = await apiCall('/contact', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: 'Test User',
+        email: 'test@example.com',
+        subject: 'Test Contact',
+        message: 'This is a test contact message'
+      })
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(result.data.success, 'Should return success');
+    
+    log(colors.green, '✓ Contact form test passed');
+    return result.data;
+  },
+
+  // Dashboard Stats Tests
+  async testGetDashboardStats() {
+    log(colors.blue, '\n🧪 Testing Get Dashboard Stats...');
+    const result = await apiCall('/dashboard', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(result.data.stats, 'Should return stats data');
+    
+    log(colors.green, '✓ Get dashboard stats test passed');
+    return result.data;
+  },
+
+  // API Keys Tests
+  async testCreateApiKey() {
+    log(colors.blue, '\n🧪 Testing Create API Key...');
+    const result = await apiCall('/api-keys', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        name: 'Test API Key',
+        permissions: ['read', 'write']
+      })
+    });
+
+    assert.strictEqual(result.status, 201, 'Should return 201 status');
+    assert.ok(result.data.success, 'Should return success');
+    assert.ok(result.data.key, 'Should return API key');
+    
+    log(colors.green, '✓ Create API key test passed');
+    return result.data;
+  },
+
+  async testGetApiKeys() {
+    log(colors.blue, '\n🧪 Testing Get API Keys...');
+    const result = await apiCall('/api-keys', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+
+    assert.strictEqual(result.status, 200, 'Should return 200 status');
+    assert.ok(Array.isArray(result.data.keys), 'Should return keys array');
+    
+    log(colors.green, '✓ Get API keys test passed');
+    return result.data;
+  },
+
+  // Error Handling Tests
+  async testUnauthorizedAccess() {
+    log(colors.blue, '\n🧪 Testing Unauthorized Access...');
+    const result = await apiCall('/users', {
+      method: 'GET'
+    });
+
+    assert.strictEqual(result.status, 401, 'Should return 401 status');
+    assert.ok(result.data.error, 'Should return error message');
+    
+    log(colors.green, '✓ Unauthorized access test passed');
+    return result.data;
+  },
+
+  async testInvalidCredentials() {
+    log(colors.blue, '\n🧪 Testing Invalid Credentials...');
+    const result = await apiCall('/auth', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'login',
+        email: 'invalid@example.com',
+        password: 'wrongpassword'
+      })
+    });
+
+    assert.strictEqual(result.status, 401, 'Should return 401 status');
+    assert.ok(result.data.error, 'Should return error message');
+    
+    log(colors.green, '✓ Invalid credentials test passed');
+    return result.data;
+  },
+
+  async testMissingRequiredFields() {
+    log(colors.blue, '\n🧪 Testing Missing Required Fields...');
+    const result = await apiCall('/auth', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'signup',
+        email: 'test@example.com'
+        // Missing password and username
+      })
+    });
+
+    assert.strictEqual(result.status, 400, 'Should return 400 status');
+    assert.ok(result.data.error, 'Should return error message');
+    
+    log(colors.green, '✓ Missing required fields test passed');
+    return result.data;
+  }
+};
+
+// Test Runner
+async function runTests() {
+  log(colors.yellow, '\n╔════════════════════════════════════════╗');
+  log(colors.yellow, '║   BOTZZZ API Test Suite               ║');
+  log(colors.yellow, '╚════════════════════════════════════════╝');
+  
+  const testResults = {
+    passed: 0,
+    failed: 0,
+    total: 0
+  };
+
+  for (const [testName, testFunc] of Object.entries(tests)) {
+    testResults.total++;
+    try {
+      await testFunc();
+      testResults.passed++;
+    } catch (error) {
+      testResults.failed++;
+      log(colors.red, `✗ ${testName} failed:`);
+      log(colors.red, error.message);
+      if (error.stack) {
+        console.log(error.stack);
+      }
+    }
+  }
+
+  // Print Summary
+  log(colors.yellow, '\n╔════════════════════════════════════════╗');
+  log(colors.yellow, '║   Test Results Summary                 ║');
+  log(colors.yellow, '╚════════════════════════════════════════╝');
+  log(colors.green, `✓ Passed: ${testResults.passed}/${testResults.total}`);
+  if (testResults.failed > 0) {
+    log(colors.red, `✗ Failed: ${testResults.failed}/${testResults.total}`);
+  }
+  
+  const coverage = ((testResults.passed / testResults.total) * 100).toFixed(2);
+  log(colors.blue, `📊 Coverage: ${coverage}%`);
+  
+  if (testResults.failed === 0) {
+    log(colors.green, '\n🎉 All tests passed!');
+  } else {
+    log(colors.red, '\n⚠️  Some tests failed. Please check the errors above.');
+    process.exit(1);
+  }
+}
+
+// Run tests if called directly
+if (require.main === module) {
+  runTests().catch(error => {
+    log(colors.red, 'Fatal error running tests:');
+    console.error(error);
+    process.exit(1);
+  });
+}
+
+module.exports = { tests, runTests };

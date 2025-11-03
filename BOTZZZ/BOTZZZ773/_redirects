@@ -1,0 +1,3 @@
+# Redirects handled by netlify.toml
+/api/* /.netlify/functions/:splat 200
+/* /index.html 404

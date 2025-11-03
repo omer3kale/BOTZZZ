@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - BOTZZZ773 Admin</title>
+    <link rel="stylesheet" href="../css/admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Admin Authentication Protection - MUST BE FIRST -->
+    <script src="../js/admin-auth.js"></script>
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-logo">BOTZZZ773</div>
+        <div class="admin-header-right">
+            <div class="admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search orders..." id="orderSearch">
+            </div>
+            <div class="admin-notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">10</span>
+            </div>
+            <div class="admin-user">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=FF1494&color=000000" alt="Admin">
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <nav class="admin-nav">
+            <a href="index.html" class="admin-nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="users.html" class="admin-nav-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item active">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
+            </a>
+            <a href="services.html" class="admin-nav-item">
+                <i class="fas fa-box"></i>
+                <span>Services</span>
+            </a>
+            <a href="payments.html" class="admin-nav-item">
+                <i class="fas fa-credit-card"></i>
+                <span>Payments</span>
+            </a>
+            <a href="tickets.html" class="admin-nav-item">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Tickets</span>
+                <span class="nav-badge">10</span>
+            </a>
+            <a href="reports.html" class="admin-nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+            <a href="settings.html" class="admin-nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="admin-page-header">
+            <h1>Orders</h1>
+            <div class="page-actions">
+                <button class="btn-secondary" onclick="exportData('csv')">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <button class="btn-primary" onclick="showAddOrderModal()">
+                    <i class="fas fa-plus"></i> Add Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-status="all" onclick="filterOrders('all')">
+                All
+            </button>
+            <button class="filter-tab" data-status="awaiting" onclick="filterOrders('awaiting')">
+                Awaiting
+            </button>
+            <button class="filter-tab" data-status="pending" onclick="filterOrders('pending')">
+                Pending
+            </button>
+            <button class="filter-tab" data-status="in-progress" onclick="filterOrders('in-progress')">
+                In progress
+            </button>
+            <button class="filter-tab" data-status="completed" onclick="filterOrders('completed')">
+                Completed
+            </button>
+            <button class="filter-tab" data-status="partial" onclick="filterOrders('partial')">
+                Partial
+            </button>
+            <button class="filter-tab" data-status="canceled" onclick="filterOrders('canceled')">
+                Canceled
+            </button>
+            <button class="filter-tab" data-status="processing" onclick="filterOrders('processing')">
+                Processing
+            </button>
+            <button class="filter-tab" data-status="fail" onclick="filterOrders('fail')">
+                Fail <span class="tab-badge">741</span>
+            </button>
+        </div>
+
+        <!-- Additional Filters -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <select class="filter-select" id="dateFilter">
+                    <option value="90">Created: Last 90 days</option>
+                    <option value="30">Created: Last 30 days</option>
+                    <option value="7">Created: Last 7 days</option>
+                    <option value="1">Created: Today</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="serviceFilter">
+                    <option value="">Service: All</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="kick">Kick</option>
+                    <option value="telegram">Telegram</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="providerFilter">
+                    <option value="">Provider: All</option>
+                    <option value="provider1">Provider 1</option>
+                    <option value="provider2">Provider 2</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select class="filter-select" id="modeFilter">
+                    <option value="">Mode: All</option>
+                    <option value="auto">Auto</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-container">
+            <table class="admin-table" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" onclick="toggleAll(this, 'order-checkbox')"></th>
+                        <th onclick="sortTable('id')">ID <i class="fas fa-sort"></i></th>
+                        <th>User</th>
+                        <th onclick="sortTable('charge')">Charge <i class="fas fa-sort"></i></th>
+                        <th>Link</th>
+                        <th>Start count</th>
+                        <th onclick="sortTable('quantity')">Quantity <i class="fas fa-sort"></i></th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Remains</th>
+                        <th onclick="sortTable('created')">Created <i class="fas fa-sort"></i></th>
+                        <th>Mode</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <!-- Sample Orders -->
+                    <tr data-status="pending">
+                        <td><input type="checkbox" class="order-checkbox"></td>
+                        <td>8309631</td>
+                        <td>codedsmm</td>
+                        <td>$0.67</td>
+                        <td><a href="#" class="link-preview">https://www.tiktok.com/@taylorkinney...</a></td>
+                        <td>0</td>
+                        <td>4008</td>
+                        <td>Tiktok Likes</td>
+                        <td><span class="status-badge pending">Pending</span></td>
+                        <td>5050</td>
+                        <td>2025-11-02 00:40:48</td>
+                        <td>Auto</td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="viewOrder(8309631)">View</a>
+                                    <a href="#" onclick="editOrder(8309631)">Edit</a>
+                                    <a href="#" onclick="refillOrder(8309631)">Refill</a>
+                                    <a href="#" onclick="cancelOrder(8309631)">Cancel</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-status="in-progress">
+                        <td><input type="checkbox" class="order-checkbox"></td>
+                        <td>8309630</td>
+                        <td>codedsmm</td>
+                        <td>$0.00</td>
+                        <td><a href="#" class="link-preview">https://www.instagram.com/reel/DQc...</a></td>
+                        <td>0</td>
+                        <td>73</td>
+                        <td>Instagram Video Views</td>
+                        <td><span class="status-badge in-progress">In progress</span></td>
+                        <td>73</td>
+                        <td>2025-11-02 00:40:27</td>
+                        <td>Auto</td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="viewOrder(8309630)">View</a>
+                                    <a href="#" onclick="editOrder(8309630)">Edit</a>
+                                    <a href="#" onclick="refillOrder(8309630)">Refill</a>
+                                    <a href="#" onclick="cancelOrder(8309630)">Cancel</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-status="completed">
+                        <td><input type="checkbox" class="order-checkbox"></td>
+                        <td>8309629</td>
+                        <td>codedsmm</td>
+                        <td>$0.01</td>
+                        <td><a href="#" class="link-preview">https://kick.com/mancisco1</a></td>
+                        <td>0</td>
+                        <td>20</td>
+                        <td>Kick Live Video Views</td>
+                        <td><span class="status-badge completed">Completed</span></td>
+                        <td>0</td>
+                        <td>2025-11-02 00:40:21</td>
+                        <td>Auto</td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="viewOrder(8309629)">View</a>
+                                    <a href="#" onclick="refillOrder(8309629)">Refill</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-status="in-progress">
+                        <td><input type="checkbox" class="order-checkbox"></td>
+                        <td>8309628</td>
+                        <td>pritampargarbabu123</td>
+                        <td>$0.02</td>
+                        <td><a href="#" class="link-preview">https://www.instagram.com/reel/DQi...</a></td>
+                        <td>0</td>
+                        <td>8000</td>
+                        <td>Instagram Video Views</td>
+                        <td><span class="status-badge in-progress">In progress</span></td>
+                        <td>8000</td>
+                        <td>2025-11-02 00:40:20</td>
+                        <td>Auto</td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="viewOrder(8309628)">View</a>
+                                    <a href="#" onclick="editOrder(8309628)">Edit</a>
+                                    <a href="#" onclick="refillOrder(8309628)">Refill</a>
+                                    <a href="#" onclick="cancelOrder(8309628)">Cancel</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr data-status="in-progress">
+                        <td><input type="checkbox" class="order-checkbox"></td>
+                        <td>8309627</td>
+                        <td>vanak</td>
+                        <td>$0.02</td>
+                        <td><a href="#" class="link-preview">https://www.tiktok.com/@efsaa.k06...</a></td>
+                        <td>0</td>
+                        <td>1100</td>
+                        <td>Tiktok Video Views</td>
+                        <td><span class="status-badge in-progress">In progress</span></td>
+                        <td>1100</td>
+                        <td>2025-11-02 00:40:09</td>
+                        <td>Auto</td>
+                        <td>
+                            <div class="actions-dropdown">
+                                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick="viewOrder(8309627)">View</a>
+                                    <a href="#" onclick="editOrder(8309627)">Edit</a>
+                                    <a href="#" onclick="refillOrder(8309627)">Refill</a>
+                                    <a href="#" onclick="cancelOrder(8309627)">Cancel</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="btn-secondary" disabled>Previous</button>
+            <span class="pagination-info">Showing 1-5 of 8,309</span>
+            <button class="btn-secondary">Next</button>
+        </div>
+    </main>
+
+    <script src="../js/admin.js"></script>
+    <script src="../js/admin-orders.js"></script>
+</body>
+</html>

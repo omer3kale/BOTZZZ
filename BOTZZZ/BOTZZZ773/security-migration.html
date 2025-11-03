@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Migration - BOTZZZ773</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .migration-container {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 20, 147, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(255, 20, 147, 0.2);
+        }
+
+        h1 {
+            color: #FF1494;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .status-value {
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .status-value.success {
+            color: #10b981;
+        }
+
+        .status-value.warning {
+            color: #f59e0b;
+        }
+
+        .status-value.error {
+            color: #ef4444;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #FF1494 0%, #FF69B4 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        .btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .log-box {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            color: #aaa;
+        }
+
+        .log-entry.success {
+            color: #10b981;
+        }
+
+        .log-entry.error {
+            color: #ef4444;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box h3 {
+            color: #f59e0b;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .warning-box p {
+            color: #aaa;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #FF1494;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="migration-container">
+        <h1>🔐 Security Migration</h1>
+        <p class="subtitle">Upgrade your data security to production-ready standards</p>
+
+        <div class="warning-box">
+            <h3>⚠️ One-Time Migration</h3>
+            <p>This will upgrade your existing data with bcrypt password hashing and AES-256 encryption for API keys. This process cannot be reversed.</p>
+        </div>
+
+        <div class="status-box">
+            <div class="status-item">
+                <span class="status-label">Users Found</span>
+                <span class="status-value" id="userCount">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Passwords Hashed</span>
+                <span class="status-value" id="hashedCount">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">API Keys Found</span>
+                <span class="status-value" id="apiKeyCount">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">API Keys Encrypted</span>
+                <span class="status-value" id="encryptedCount">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Migration Status</span>
+                <span class="status-value" id="migrationStatus">Not Started</span>
+            </div>
+        </div>
+
+        <button class="btn" id="migrateBtn" onclick="runMigration()">
+            Start Security Migration
+        </button>
+
+        <div class="log-box" id="logBox" style="display: none;">
+            <div id="logContent"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="signin.html" style="color: #FF1494; text-decoration: none; font-size: 14px;">
+                Return to Sign In
+            </a>
+        </div>
+    </div>
+
+    <!-- Security Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <script>
+        const ENCRYPTION_KEY = 'BOTZZZ773_SECURE_KEY_2025';
+        const SALT_ROUNDS = 10;
+
+        function log(message, type = 'info') {
+            const logBox = document.getElementById('logBox');
+            const logContent = document.getElementById('logContent');
+            logBox.style.display = 'block';
+
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContent.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function updateStatus() {
+            const users = JSON.parse(localStorage.getItem('USERS') || '[]');
+            const apiKeys = JSON.parse(localStorage.getItem('botzzz773_api_keys') || '[]');
+
+            document.getElementById('userCount').textContent = users.length;
+            document.getElementById('apiKeyCount').textContent = apiKeys.length;
+
+            // Check if already migrated
+            const hashedCount = users.filter(u => u.password && u.password.startsWith('$2')).length;
+            const encryptedCount = apiKeys.filter(k => {
+                try {
+                    // Check if key looks encrypted (not plain text)
+                    return k.key && k.key.includes('U2Fsd');
+                } catch (e) {
+                    return false;
+                }
+            }).length;
+
+            document.getElementById('hashedCount').textContent = hashedCount;
+            document.getElementById('encryptedCount').textContent = encryptedCount;
+
+            if (hashedCount === users.length && encryptedCount === apiKeys.length && users.length > 0) {
+                document.getElementById('migrationStatus').textContent = 'Complete ✓';
+                document.getElementById('migrationStatus').className = 'status-value success';
+                document.getElementById('migrateBtn').textContent = 'Migration Already Complete';
+                document.getElementById('migrateBtn').disabled = true;
+            } else if (hashedCount > 0 || encryptedCount > 0) {
+                document.getElementById('migrationStatus').textContent = 'Partial';
+                document.getElementById('migrationStatus').className = 'status-value warning';
+            } else {
+                document.getElementById('migrationStatus').textContent = 'Pending';
+                document.getElementById('migrationStatus').className = 'status-value error';
+            }
+        }
+
+        async function runMigration() {
+            const btn = document.getElementById('migrateBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Migrating... <span class="spinner"></span>';
+
+            log('Starting security migration...', 'info');
+
+            try {
+                // Migrate Users (Hash Passwords)
+                let users = JSON.parse(localStorage.getItem('USERS') || '[]');
+                log(`Found ${users.length} users`, 'info');
+
+                let hashedCount = 0;
+                for (let i = 0; i < users.length; i++) {
+                    const user = users[i];
+                    
+                    // Check if password is already hashed
+                    if (user.password && !user.password.startsWith('$2')) {
+                        log(`Hashing password for user: ${user.email}`, 'info');
+                        user.password = bcrypt.hashSync(user.password, SALT_ROUNDS);
+                        hashedCount++;
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+                    } else if (user.password && user.password.startsWith('$2')) {
+                        log(`Password already hashed for: ${user.email}`, 'success');
+                    }
+                }
+
+                localStorage.setItem('USERS', JSON.stringify(users));
+                log(`Successfully hashed ${hashedCount} passwords`, 'success');
+                document.getElementById('hashedCount').textContent = users.length;
+
+                // Migrate API Keys (Encrypt)
+                let apiKeys = JSON.parse(localStorage.getItem('botzzz773_api_keys') || '[]');
+                log(`Found ${apiKeys.length} API keys`, 'info');
+
+                let encryptedCount = 0;
+                for (let i = 0; i < apiKeys.length; i++) {
+                    const key = apiKeys[i];
+                    
+                    // Check if key is already encrypted
+                    if (key.key && !key.key.includes('U2Fsd')) {
+                        log(`Encrypting API key: ${key.name}`, 'info');
+                        key.key = CryptoJS.AES.encrypt(key.key, ENCRYPTION_KEY).toString();
+                        encryptedCount++;
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    } else if (key.key && key.key.includes('U2Fsd')) {
+                        log(`API key already encrypted: ${key.name}`, 'success');
+                    }
+                }
+
+                localStorage.setItem('botzzz773_api_keys', JSON.stringify(apiKeys));
+                log(`Successfully encrypted ${encryptedCount} API keys`, 'success');
+                document.getElementById('encryptedCount').textContent = apiKeys.length;
+
+                // Update status
+                document.getElementById('migrationStatus').textContent = 'Complete ✓';
+                document.getElementById('migrationStatus').className = 'status-value success';
+
+                log('✓ Migration completed successfully!', 'success');
+                log('Your data is now production-ready!', 'success');
+
+                btn.textContent = 'Migration Complete ✓';
+                btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+
+                setTimeout(() => {
+                    if (confirm('Migration complete! Redirect to sign in page?')) {
+                        window.location.href = 'signin.html';
+                    }
+                }, 2000);
+
+            } catch (error) {
+                log(`Error during migration: ${error.message}`, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Retry Migration';
+                btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            }
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', updateStatus);
+    </script>
+</body>
+</html>

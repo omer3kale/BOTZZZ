@@ -1,0 +1,204 @@
+// Add Funds Page Functionality
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('addFundsForm');
+    const customAmountInput = document.getElementById('customAmount');
+    const amountButtons = document.querySelectorAll('.amount-btn');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const summaryFee = document.getElementById('summaryFee');
+    const summaryTotal = document.getElementById('summaryTotal');
+
+    // Processing fee percentage
+    const FEE_PERCENTAGE = 2.5;
+
+    // Amount button selection
+    amountButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            amountButtons.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            // Set the amount in the input
+            const amount = parseFloat(this.dataset.amount);
+            customAmountInput.value = amount;
+            // Update summary
+            updateSummary(amount);
+        });
+    });
+
+    // Custom amount input
+    customAmountInput.addEventListener('input', function() {
+        const amount = parseFloat(this.value) || 0;
+        // Remove active class from preset buttons
+        amountButtons.forEach(b => b.classList.remove('active'));
+        // Update summary
+        updateSummary(amount);
+    });
+
+    // Update order summary
+    function updateSummary(amount) {
+        if (amount < 5) {
+            summaryAmount.textContent = '$0.00';
+            summaryFee.textContent = '$0.00';
+            summaryTotal.textContent = '$0.00';
+            return;
+        }
+
+        const fee = amount * (FEE_PERCENTAGE / 100);
+        const total = amount + fee;
+
+        summaryAmount.textContent = '$' + amount.toFixed(2);
+        summaryFee.textContent = '$' + fee.toFixed(2);
+        summaryTotal.textContent = '$' + total.toFixed(2);
+    }
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const amount = parseFloat(customAmountInput.value);
+
+
+        // Validation
+        if (amount < 5) {
+            showMessage('Minimum deposit amount is $5.00', 'error');
+            customAmountInput.focus();
+            return;
+        }
+
+        // Get user email from token
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showMessage('Please login to add funds', 'error');
+            window.location.href = 'signin.html';
+            return;
+        }
+
+        // Decode token to get user email
+        let userEmail;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            userEmail = payload.email;
+        } catch (error) {
+            showMessage('Invalid session. Please login again.', 'error');
+            window.location.href = 'signin.html';
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Redirecting to Payeer...</span>';
+
+        try {
+            // Call Payeer API
+            const response = await fetch('/.netlify/functions/payeer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    action: 'create-payment',
+                    amount: amount,
+                    email: userEmail
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Show manual payment instructions instead of redirecting
+                showManualPaymentInstructions(amount, data.orderId);
+            } else {
+                throw new Error(data.error || 'Payment initiation failed');
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            showMessage(error.message || 'Failed to initiate payment. Please try again.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    });
+
+    // Initialize with no amount selected
+    updateSummary(0);
+});
+
+// Function to show manual payment instructions
+function showManualPaymentInstructions(amount, orderId) {
+    const modal = document.createElement('div');
+    modal.className = 'payment-instructions-modal';
+    modal.innerHTML = `
+        <div class="payment-instructions-content">
+            <div class="payment-instructions-header">
+                <h2>Payeer Manual Payment</h2>
+                <button class="close-modal" onclick="this.closest('.payment-instructions-modal').remove()">×</button>
+            </div>
+            <div class="payment-instructions-body">
+                <div class="payment-method-badge">
+                    <i class="fas fa-wallet"></i>
+                    <span>Manual Payeer Transfer</span>
+                </div>
+                <div class="payment-details">
+                    <h3>Payment Details</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Amount to Send:</span>
+                        <span class="detail-value amount">$${amount.toFixed(2)} USD</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Order ID:</span>
+                        <span class="detail-value">${orderId}</span>
+                    </div>
+                    <div class="detail-row highlight">
+                        <span class="detail-label">Send to Payeer ID:</span>
+                        <span class="detail-value payeer-id">P1135223884</span>
+                    </div>
+                </div>
+                <div class="payment-instructions">
+                    <h3>Instructions</h3>
+                    <ol>
+                        <li>Login to your Payeer account</li>
+                        <li>Go to <strong>Transfer</strong> section</li>
+                        <li>Send <strong>$${amount.toFixed(2)} USD</strong> to Payeer ID: <strong>P1135223884</strong></li>
+                        <li>Include Order ID <strong>${orderId}</strong> in the transfer notes</li>
+                        <li>After completing the transfer, contact us to confirm</li>
+                    </ol>
+                </div>
+                <div class="payment-confirmation">
+                    <div class="confirmation-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3>Confirm Your Payment</h3>
+                    <p>After sending the payment, please contact us to activate your funds:</p>
+                    <a href="mailto:omerdmvc@gmail.com?subject=Payment Confirmation - Order ${orderId}&body=I have sent $${amount.toFixed(2)} USD to Payeer ID P1135223884.%0D%0AOrder ID: ${orderId}%0D%0APlease confirm and activate my funds." 
+                       class="btn-primary btn-contact">
+                        <i class="fas fa-envelope"></i>
+                        Contact: omerdmvc@gmail.com
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+// Helper function to show messages
+function showMessage(message, type) {
+    // Create message element if it doesn't exist
+    let messageDiv = document.querySelector('.message-toast');
+    if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.className = 'message-toast';
+        document.body.appendChild(messageDiv);
+    }
+    
+    messageDiv.textContent = message;
+    messageDiv.className = `message-toast ${type}`;
+    messageDiv.style.display = 'block';
+    
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 3000);
+}

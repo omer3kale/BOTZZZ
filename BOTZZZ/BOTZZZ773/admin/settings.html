@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - BOTZZZ773 Admin</title>
+    <link rel="stylesheet" href="../css/admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Admin Authentication Protection - MUST BE FIRST -->
+    <script src="../js/admin-auth.js"></script>
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="admin-logo">BOTZZZ773</div>
+        <div class="admin-header-right">
+            <div class="admin-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search settings..." id="settingsSearch">
+            </div>
+            <div class="admin-notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">10</span>
+            </div>
+            <div class="admin-user">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=FF1494&color=000000" alt="Admin">
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <nav class="admin-nav">
+            <a href="index.html" class="admin-nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="users.html" class="admin-nav-item">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            <a href="orders.html" class="admin-nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
+            </a>
+            <a href="services.html" class="admin-nav-item">
+                <i class="fas fa-box"></i>
+                <span>Services</span>
+            </a>
+            <a href="payments.html" class="admin-nav-item">
+                <i class="fas fa-credit-card"></i>
+                <span>Payments</span>
+            </a>
+            <a href="tickets.html" class="admin-nav-item">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Tickets</span>
+                <span class="nav-badge">10</span>
+            </a>
+            <a href="reports.html" class="admin-nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+            </a>
+            <a href="settings.html" class="admin-nav-item active">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="admin-page-header">
+            <h1>Settings</h1>
+        </div>
+
+        <div class="settings-container">
+            <!-- Settings Sidebar -->
+            <div class="settings-sidebar">
+                <a href="#" class="settings-nav-item active" onclick="showSettingsSection('general')">
+                    <i class="fas fa-sliders-h"></i> General
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('providers')">
+                    <i class="fas fa-plug"></i> Providers
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('payments')">
+                    <i class="fas fa-credit-card"></i> Payments
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('modules')">
+                    <i class="fas fa-cube"></i> Modules
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('integrations')">
+                    <i class="fas fa-plug"></i> Integrations
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('notifications')">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('bonuses')">
+                    <i class="fas fa-gift"></i> Bonuses
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('signup')">
+                    <i class="fas fa-user-plus"></i> Signup Form
+                </a>
+                <a href="#" class="settings-nav-item" onclick="showSettingsSection('ticket')">
+                    <i class="fas fa-ticket-alt"></i> Ticket Form
+                </a>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="settings-content">
+                <!-- Providers Section -->
+                <div id="providers-section" class="settings-section">
+                    <div class="settings-header">
+                        <h2>Providers</h2>
+                        <button class="btn-primary" onclick="addProvider()">
+                            <i class="fas fa-plus"></i> Add Provider
+                        </button>
+                    </div>
+
+                    <div class="providers-grid">
+                        <!-- Provider Card 1 -->
+                        <div class="provider-card">
+                            <div class="provider-header">
+                                <div class="provider-info">
+                                    <h3>SMM Provider 1</h3>
+                                    <span class="status-badge completed">Active</span>
+                                </div>
+                                <div class="provider-actions">
+                                    <button class="btn-icon" onclick="editProvider(1)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon" onclick="deleteProvider(1)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="provider-details">
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">API URL:</span>
+                                    <span class="detail-value">https://api.smmProvider1.com/v2</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">API Key:</span>
+                                    <span class="detail-value">••••••••••••••••</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Services:</span>
+                                    <span class="detail-value">87 services</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Markup:</span>
+                                    <span class="detail-value">15%</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Last Sync:</span>
+                                    <span class="detail-value">2025-11-01 14:30:00</span>
+                                </div>
+                            </div>
+                            <div class="provider-footer">
+                                <button class="btn-secondary btn-sm" onclick="syncProvider(1)">
+                                    <i class="fas fa-sync"></i> Sync Services
+                                </button>
+                                <button class="btn-secondary btn-sm" onclick="testProvider(1)">
+                                    <i class="fas fa-check-circle"></i> Test Connection
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Provider Card 2 -->
+                        <div class="provider-card">
+                            <div class="provider-header">
+                                <div class="provider-info">
+                                    <h3>Social Boost API</h3>
+                                    <span class="status-badge completed">Active</span>
+                                </div>
+                                <div class="provider-actions">
+                                    <button class="btn-icon" onclick="editProvider(2)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon" onclick="deleteProvider(2)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="provider-details">
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">API URL:</span>
+                                    <span class="detail-value">https://socialboost.io/api</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">API Key:</span>
+                                    <span class="detail-value">••••••••••••••••</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Services:</span>
+                                    <span class="detail-value">124 services</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Markup:</span>
+                                    <span class="detail-value">20%</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Last Sync:</span>
+                                    <span class="detail-value">2025-11-01 08:15:00</span>
+                                </div>
+                            </div>
+                            <div class="provider-footer">
+                                <button class="btn-secondary btn-sm" onclick="syncProvider(2)">
+                                    <i class="fas fa-sync"></i> Sync Services
+                                </button>
+                                <button class="btn-secondary btn-sm" onclick="testProvider(2)">
+                                    <i class="fas fa-check-circle"></i> Test Connection
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Provider Card 3 -->
+                        <div class="provider-card">
+                            <div class="provider-header">
+                                <div class="provider-info">
+                                    <h3>Growth Services</h3>
+                                    <span class="status-badge pending">Inactive</span>
+                                </div>
+                                <div class="provider-actions">
+                                    <button class="btn-icon" onclick="editProvider(3)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon" onclick="deleteProvider(3)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="provider-details">
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">API URL:</span>
+                                    <span class="detail-value">https://growth-api.net/v1</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">API Key:</span>
+                                    <span class="detail-value">••••••••••••••••</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Services:</span>
+                                    <span class="detail-value">56 services</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Markup:</span>
+                                    <span class="detail-value">18%</span>
+                                </div>
+                                <div class="provider-detail-item">
+                                    <span class="detail-label">Last Sync:</span>
+                                    <span class="detail-value">Never</span>
+                                </div>
+                            </div>
+                            <div class="provider-footer">
+                                <button class="btn-secondary btn-sm" onclick="syncProvider(3)">
+                                    <i class="fas fa-sync"></i> Sync Services
+                                </button>
+                                <button class="btn-secondary btn-sm" onclick="testProvider(3)">
+                                    <i class="fas fa-check-circle"></i> Test Connection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/admin.js"></script>
+    <script src="../js/admin-settings.js"></script>
+</body>
+</html>
