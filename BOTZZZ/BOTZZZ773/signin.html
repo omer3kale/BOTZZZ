@@ -242,22 +242,38 @@
             
             console.log('Google user data:', payload);
             
-            // You can now send this to your backend to create/login user
-            // For now, we'll show a message
-            alert('Google Sign-In feature is being configured. Please use email/password login.');
-            
-            // TODO: Send to backend
-            // fetch('/.netlify/functions/auth', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({
-            //         action: 'google-signin',
-            //         credential: credential,
-            //         email: payload.email,
-            //         name: payload.name,
-            //         picture: payload.picture
-            //     })
-            // });
+            // Send to backend to create/login user
+            fetch('/.netlify/functions/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'google-signin',
+                    credential: credential,
+                    email: payload.email,
+                    name: payload.name,
+                    picture: payload.picture
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Store token
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Show success message
+                    console.log('Google Sign-In successful!');
+                    
+                    // Redirect to dashboard
+                    window.location.href = '/dashboard.html';
+                } else {
+                    alert(data.error || 'Google Sign-In failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Google Sign-In error:', error);
+                alert('An error occurred during Google Sign-In. Please try again.');
+            });
         }
         
         // Password toggle function

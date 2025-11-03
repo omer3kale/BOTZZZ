@@ -57,6 +57,10 @@ exports.handler = async (event) => {
         return await handleSignup(data, headers);
       case 'login':
         return await handleLogin(data, headers);
+      case 'google-signin':
+        return await handleGoogleSignIn(data, headers);
+      case 'google-signup':
+        return await handleGoogleSignUp(data, headers);
       case 'verify':
         return await handleVerify(data, headers);
       case 'logout':
@@ -457,4 +461,136 @@ async function handleResetPassword({ token, newPassword }, headers) {
       body: JSON.stringify({ error: 'Internal server error' })
     };
   }
+}
+
+// Google Sign-In Handler
+async function handleGoogleSignIn(data, headers) {
+  try {
+    const { credential, email, name, picture } = data;
+
+    if (!credential || !email) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Missing required Google credentials' })
+      };
+    }
+
+    // Check if user exists
+    const { data: existingUser, error: findError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .eq('auth_provider', 'google')
+      .single();
+
+    let user;
+
+    if (existingUser) {
+      // User exists - update last login
+      const { data: updatedUser, error: updateError } = await supabaseAdmin
+        .from('users')
+        .update({ 
+          last_login: new Date().toISOString(),
+          profile_picture: picture // Update profile picture if changed
+        })
+        .eq('id', existingUser.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Update user error:', updateError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Failed to update user' })
+        };
+      }
+
+      user = updatedUser;
+    } else {
+      // Check if email exists with different auth provider
+      const { data: emailExists } = await supabaseAdmin
+        .from('users')
+        .select('email, auth_provider')
+        .eq('email', email)
+        .single();
+
+      if (emailExists) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ 
+            error: `This email is already registered with ${emailExists.auth_provider} login. Please use ${emailExists.auth_provider} to sign in.`
+          })
+        };
+      }
+
+      // Create new user from Google sign-in
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          email: email,
+          full_name: name,
+          username: email.split('@')[0] + Math.floor(Math.random() * 1000),
+          password_hash: null, // No password for Google users
+          auth_provider: 'google',
+          google_id: credential,
+          profile_picture: picture,
+          balance: 0,
+          role: 'customer',
+          status: 'active',
+          created_at: new Date().toISOString(),
+          last_login: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('Create Google user error:', createError);
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Failed to create user account' })
+        };
+      }
+
+      user = newUser;
+    }
+
+    // Generate JWT token
+    const token = createToken(user);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        token: token,
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          username: user.username,
+          role: user.role,
+          balance: user.balance,
+          profile_picture: user.profile_picture,
+          auth_provider: user.auth_provider
+        }
+      })
+    };
+  } catch (error) {
+    console.error('Google sign-in error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'Internal server error' })
+    };
+  }
+}
+
+// Google Sign-Up Handler (same as sign-in for Google OAuth)
+async function handleGoogleSignUp(data, headers) {
+  // Google sign-up is the same as sign-in (auto-creates account if doesn't exist)
+  return await handleGoogleSignIn(data, headers);
 }
