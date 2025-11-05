@@ -302,7 +302,7 @@ async function createProvider(data, headers) {
       api_url: providerApiUrl,
       api_key: apiKey,
       markup: providerMarkup,
-      status: status || 'active'
+      status: status ? status.toLowerCase() : 'active'  // Ensure lowercase status
       // Note: description field removed as it doesn't exist in providers table
     };
 

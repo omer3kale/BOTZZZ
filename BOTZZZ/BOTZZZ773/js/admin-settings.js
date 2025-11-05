@@ -1097,7 +1097,7 @@ function submitAddProvider(event) {
             apiUrl: providerData.apiUrl,
             apiKey: providerData.apiKey,
             markup: parseFloat(providerData.markup) || 15,
-            status: providerData.status || 'Active'
+            status: (providerData.status || 'Active').toLowerCase()  // Ensure lowercase
         })
     })
     .then(response => response.json())
