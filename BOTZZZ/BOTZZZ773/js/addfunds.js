@@ -7,9 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const summaryAmount = document.getElementById('summaryAmount');
     const summaryFee = document.getElementById('summaryFee');
     const summaryTotal = document.getElementById('summaryTotal');
+    const balanceAmount = document.querySelector('.balance-amount');
 
     // Processing fee percentage
     const FEE_PERCENTAGE = 2.5;
+
+    // Load current balance on page load
+    loadUserBalance();
 
     // Amount button selection
     amountButtons.forEach(btn => {
@@ -111,19 +115,53 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Show manual payment instructions instead of redirecting
                 showManualPaymentInstructions(amount, data.orderId);
+                loadUserBalance();
             } else {
                 throw new Error(data.error || 'Payment initiation failed');
             }
         } catch (error) {
             console.error('Payment error:', error);
             showMessage(error.message || 'Failed to initiate payment. Please try again.', 'error');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
         }
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
     });
 
     // Initialize with no amount selected
     updateSummary(0);
+
+    async function loadUserBalance() {
+        const token = localStorage.getItem('token');
+
+        if (!token || !balanceAmount) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/.netlify/functions/users', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to retrieve balance');
+            }
+
+            const data = await response.json();
+
+            if (data && data.user) {
+                const balanceValue = parseFloat(data.user.balance || 0);
+                balanceAmount.textContent = `$${balanceValue.toFixed(2)}`;
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
+        } catch (error) {
+            console.error('Error loading user balance:', error);
+        }
+    }
 });
 
 // Function to show manual payment instructions
