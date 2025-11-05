@@ -281,7 +281,7 @@ async function syncProvider(data, headers) {
 
 async function createProvider(data, headers) {
   try {
-    const { name, apiUrl, apiKey, markup, description, status } = data;
+    const { name, apiUrl, apiKey, markup, status } = data;
 
     console.log('[DEBUG] Create provider request:', { name, apiUrl, apiKey: apiKey?.substring(0, 10) + '...', markup, status });
 
@@ -302,8 +302,8 @@ async function createProvider(data, headers) {
       api_url: providerApiUrl,
       api_key: apiKey,
       markup: providerMarkup,
-      description: description || '',
       status: status || 'active'
+      // Note: description field removed as it doesn't exist in providers table
     };
 
     console.log('[DEBUG] Inserting provider:', { ...insertData, api_key: insertData.api_key?.substring(0, 10) + '...' });
