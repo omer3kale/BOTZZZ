@@ -5,7 +5,7 @@
  * Run: node tests/admin-features.test.js
  */
 
-const BASE_URL = (process.env.TEST_URL || 'https://botzzz773.pro').replace(/\/$/, '');
+const BASE_URL = (process.env.TEST_URL || 'https://darling-profiterole-752433.netlify.app').replace(/\/$/, '');
 
 // ANSI color codes for terminal output
 const colors = {
