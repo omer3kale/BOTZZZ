@@ -33,7 +33,23 @@ exports.handler = async (event) => {
 
   // Verify authentication - normalize header casing
   const authHeader = event.headers.authorization || event.headers.Authorization;
+  
+  // DEBUG: Log auth attempt
+  console.log('[DEBUG] Auth attempt:', {
+    hasAuthHeader: !!authHeader,
+    headerValue: authHeader ? authHeader.substring(0, 20) + '...' : 'none',
+    hasJwtSecret: !!JWT_SECRET,
+    allHeaders: Object.keys(event.headers)
+  });
+  
   const user = getUserFromToken(authHeader);
+  
+  // DEBUG: Log auth result
+  console.log('[DEBUG] Auth result:', {
+    userFound: !!user,
+    userRole: user?.role,
+    userEmail: user?.email
+  });
   if (!user) {
     return {
       statusCode: 401,
