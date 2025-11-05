@@ -43,7 +43,8 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { action, userId, ...data } = JSON.parse(event.body || '{}');
+    const bodyData = event.body && event.body.trim() ? JSON.parse(event.body) : {};
+    const { action, userId, ...data } = bodyData;
 
     // Admin-only actions
     const adminActions = ['list', 'create', 'update-any', 'delete'];
@@ -58,6 +59,16 @@ exports.handler = async (event) => {
     switch (event.httpMethod) {
       case 'GET':
         return await handleGet(user, headers);
+      case 'POST':
+        // Handle POST with action parameter
+        if (action === 'list') {
+          return await handleGet(user, headers);
+        }
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Invalid action' })
+        };
       case 'PUT':
         return await handleUpdate(user, data, headers);
       case 'DELETE':
