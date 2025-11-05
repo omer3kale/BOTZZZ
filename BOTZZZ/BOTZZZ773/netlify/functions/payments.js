@@ -6,6 +6,14 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
+// Validate required environment variables
+const requiredEnvVars = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_SERVICE_KEY'];
+requiredEnvVars.forEach(varName => {
+  if (!process.env[varName]) {
+    console.error(`❌ Missing required environment variable: ${varName}`);
+  }
+});
+
 // Lazy-load Stripe only when needed and configured
 function getStripeClient() {
   const key = (STRIPE_SECRET_KEY || '').trim();
@@ -73,6 +81,16 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body || '{}');
     const { action } = body;
+
+    // Log request (with PII redaction)
+    console.log('Payment request:', {
+      action,
+      method: body.method,
+      amount: body.amount,
+      userId: body.userId ? body.userId.substring(0, 8) + '***' : undefined,
+      httpMethod: event.httpMethod,
+      timestamp: new Date().toISOString()
+    });
 
     // Handle PUT requests
     if (event.httpMethod === 'PUT') {
