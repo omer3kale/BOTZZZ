@@ -231,9 +231,9 @@ async function syncProvider(data, headers) {
           .update({
             name: service.name,
             category: service.category || 'Other',
-            price: service.rate,
-            min_order: service.min,
-            max_order: service.max
+            rate: service.rate,
+            min_quantity: service.min,
+            max_quantity: service.max
           })
           .eq('id', existingService.id);
         updatedCount++;
@@ -246,9 +246,9 @@ async function syncProvider(data, headers) {
             provider_service_id: service.service,
             name: service.name,
             category: service.category || 'Other',
-            price: service.rate,
-            min_order: service.min,
-            max_order: service.max,
+            rate: service.rate,
+            min_quantity: service.min,
+            max_quantity: service.max,
             status: 'inactive' // New services start as inactive
           });
         addedCount++;

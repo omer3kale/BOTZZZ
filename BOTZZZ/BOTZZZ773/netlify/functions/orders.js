@@ -91,7 +91,7 @@ async function handleGetOrders(user, headers) {
       .select(`
         *,
         user:users(id, email, username),
-        service:services(id, name, category, price)
+        service:services(id, name, category, rate)
       `)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -180,7 +180,7 @@ async function handleCreateOrder(user, data, headers) {
     }
 
     // Calculate total cost
-    const totalCost = (service.price * quantity).toFixed(2);
+    const totalCost = (service.rate * quantity).toFixed(2);
 
     // Check user balance
     const { data: userData } = await supabaseAdmin
@@ -203,11 +203,12 @@ async function handleCreateOrder(user, data, headers) {
       .insert({
         user_id: user.userId,
         service_id: serviceId,
-        provider_id: service.provider_id,
+        service_name: service.name,
         link: link,
         quantity: quantity,
         charge: totalCost,
-        status: 'pending'
+        status: 'pending',
+        order_number: `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
       })
       .select()
       .single();

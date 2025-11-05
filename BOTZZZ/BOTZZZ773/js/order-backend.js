@@ -52,10 +52,10 @@ function populateServiceDropdown(services) {
         servicesByCategory[category].forEach(service => {
             const option = document.createElement('option');
             option.value = service.id;
-            option.textContent = `${service.name} ($${service.price}/1000)`;
-            option.dataset.price = service.price;
-            option.dataset.min = service.min_order;
-            option.dataset.max = service.max_order;
+            option.textContent = `${service.name} ($${service.rate}/1000)`;
+            option.dataset.price = service.rate;
+            option.dataset.min = service.min_quantity;
+            option.dataset.max = service.max_quantity;
             optgroup.appendChild(option);
         });
 

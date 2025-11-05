@@ -176,7 +176,7 @@
                     servicesData[category].push({
                         id: service.id.toString(),
                         name: service.name,
-                        price: parseFloat(service.price),
+                        price: parseFloat(service.rate),
                         min: service.min_quantity || 100,
                         max: service.max_quantity || 10000,
                         avgTime: service.avg_time || 'Not specified',

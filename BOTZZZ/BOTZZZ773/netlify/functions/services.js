@@ -155,9 +155,9 @@ async function handleCreateService(user, data, headers) {
         name,
         category,
         description: description || '',
-        price: servicePrice,
-        min_order: minQty,
-        max_order: maxQty,
+        rate: servicePrice,
+        min_quantity: minQty,
+        max_quantity: maxQty,
         type: type || 'service',
         status: status || 'active'
       })
@@ -216,10 +216,10 @@ async function handleUpdateService(user, data, headers) {
     const updates = {};
     if (name !== undefined) updates.name = name;
     if (category !== undefined) updates.category = category;
-    if (rate !== undefined) updates.price = rate;
-    if (price !== undefined) updates.price = price;
-    if (min_quantity !== undefined) updates.min_order = min_quantity;
-    if (max_quantity !== undefined) updates.max_order = max_quantity;
+    if (rate !== undefined) updates.rate = rate;
+    if (price !== undefined) updates.rate = price;
+    if (min_quantity !== undefined) updates.min_quantity = min_quantity;
+    if (max_quantity !== undefined) updates.max_quantity = max_quantity;
     if (description !== undefined) updates.description = description;
     if (status !== undefined) updates.status = status;
 
@@ -360,9 +360,9 @@ async function handleDuplicateService(data, headers) {
         name: `${originalService.name} (Copy)`,
         category: originalService.category,
         description: originalService.description,
-        price: originalService.price,
-        min_order: originalService.min_order,
-        max_order: originalService.max_order,
+        rate: originalService.rate,
+        min_quantity: originalService.min_quantity,
+        max_quantity: originalService.max_quantity,
         type: originalService.type,
         status: 'inactive' // New duplicates start as inactive
       })

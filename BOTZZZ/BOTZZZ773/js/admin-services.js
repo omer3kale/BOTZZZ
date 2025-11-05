@@ -811,9 +811,9 @@ async function loadServices() {
                         </td>
                         <td>${service.category || 'Default'}</td>
                         <td>${service.providers?.name || 'N/A'}</td>
-                        <td>$${parseFloat(service.price || 0).toFixed(2)}</td>
-                        <td>${service.min_order || 0}</td>
-                        <td>${service.max_order || 0}</td>
+                        <td>$${parseFloat(service.rate || 0).toFixed(4)}</td>
+                        <td>${service.min_quantity || 0}</td>
+                        <td>${service.max_quantity || 0}</td>
                         <td><span class="status-badge ${statusClass}">${service.status}</span></td>
                         <td>
                             <div class="actions-dropdown">
