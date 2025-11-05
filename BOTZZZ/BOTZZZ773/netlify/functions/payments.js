@@ -1,7 +1,10 @@
 // Payments API - Process Payments, Add Balance
 const { supabase, supabaseAdmin } = require('./utils/supabase');
 const jwt = require('jsonwebtoken');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripeLib = require('stripe');
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+const stripe = STRIPE_SECRET_KEY ? stripeLib(STRIPE_SECRET_KEY) : null;
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -126,6 +129,16 @@ async function handleCreateCheckout(user, data, headers) {
     }
 
     if (method === 'stripe') {
+      if (!stripe) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({
+            error: 'Stripe is not configured. Please contact support.'
+          })
+        };
+      }
+
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -196,6 +209,14 @@ async function handleCreateCheckout(user, data, headers) {
 }
 
 async function handleWebhook(event, headers) {
+  if (!stripe || !STRIPE_WEBHOOK_SECRET) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'Stripe webhook is not configured' })
+    };
+  }
+
   try {
     const sig = event.headers['stripe-signature'];
     let stripeEvent;

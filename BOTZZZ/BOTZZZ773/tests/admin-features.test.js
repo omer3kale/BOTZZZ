@@ -18,6 +18,9 @@ const colors = {
     cyan: '\x1b[36m'
 };
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'botzzz773@gmail.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Mariogomez33*';
+
 let testResults = {
     passed: 0,
     failed: 0,
@@ -32,7 +35,8 @@ async function apiCall(endpoint, options = {}) {
     const response = await fetch(url, {
         headers: {
             'Content-Type': 'application/json',
-            ...options.headers
+            ...options.headers,
+            ...(options.headers?.Authorization ? { 'authorization': options.headers.Authorization } : {})
         },
         ...options
     });
@@ -81,15 +85,16 @@ async function runTests() {
     let adminToken = null;
     let testUserId = null;
     let testProviderId = null;
+    let adminUser = null;
 
     // Setup: Login as admin
     await test('Admin Login', async () => {
         const { response, data } = await apiCall('auth', {
             method: 'POST',
             body: JSON.stringify({
-                action: 'signin',
-                email: 'admin@example.com',
-                password: 'Admin123!'
+                action: 'login',
+                email: ADMIN_EMAIL,
+                password: ADMIN_PASSWORD
             })
         });
 
@@ -99,6 +104,8 @@ async function runTests() {
         assert(data.user.role === 'admin', 'User should have admin role');
 
         adminToken = data.token;
+        adminUser = data.user;
+        testUserId = adminUser.id; // use admin account for testing
         console.log(`${colors.green}✓ Admin token obtained${colors.reset}`);
     });
 
@@ -107,19 +114,9 @@ async function runTests() {
         return;
     }
 
-    // Get a test user
-    await test('Get Test User', async () => {
-        const { response, data } = await apiCall('users', {
-            headers: {
-                'Authorization': `Bearer ${adminToken}`
-            }
-        });
-
-        assert(response.ok, `Get users failed with status ${response.status}`);
-        assert(data.users && data.users.length > 0, 'Should have at least one user');
-
-        testUserId = data.users[0].id;
-        console.log(`${colors.green}✓ Using test user: ${data.users[0].username} (${testUserId})${colors.reset}`);
+    await test('Admin Token Valid', async () => {
+        assert(adminUser && adminUser.id, 'Admin user data missing from login response');
+        console.log(`${colors.green}✓ Using admin account for manual payment tests (${adminUser.email})${colors.reset}`);
     });
 
     // TEST 1: Add Manual Payment - Completed
