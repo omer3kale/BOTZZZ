@@ -77,6 +77,15 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<span>Processing...</span>';
             
             try {
+                // Get service_id from the service dropdown (will be added)
+                const serviceSelect = document.getElementById('service');
+                if (!serviceSelect || !serviceSelect.value) {
+                    showMessage('Please select a service', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    return;
+                }
+                
                 // Call Orders API
                 const response = await fetch('/.netlify/functions/orders', {
                     method: 'POST',
@@ -85,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     body: JSON.stringify({
-                        service_id: getServiceId(data.platform, data.serviceType),
+                        service_id: parseInt(serviceSelect.value),
                         link: data.link,
                         quantity: parseInt(data.quantity),
                         notes: data.notes || ''
@@ -116,14 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.innerHTML = originalBtnText;
             }
         });
-    }
-    
-    // Helper function to get service ID based on platform and type
-    function getServiceId(platform, serviceType) {
-        // This maps platform and service type to actual service IDs
-        // In production, this should query the services API
-        // For now, return a placeholder that will be replaced when services are synced
-        return 1; // TODO: Get from services API or cache
     }
     
     // Pre-fill service from URL parameter
