@@ -102,8 +102,11 @@ async function handleGetProviders(headers) {
 
 async function handleAction(data, headers) {
   const { action, ...params } = data;
+  const normalizedAction = typeof action === 'string' ? action.trim().toLowerCase() : '';
 
-  switch (action) {
+  console.log('[DEBUG] handleAction called with:', { action, normalizedAction, params: Object.keys(params) });
+
+  switch (normalizedAction) {
     case 'test':
       return await testProvider(params, headers);
     case 'sync':
@@ -111,10 +114,15 @@ async function handleAction(data, headers) {
     case 'create':
       return await createProvider(params, headers);
     default:
+      console.error('[ERROR] Invalid action received:', action, 'Normalized:', normalizedAction, 'Full data:', JSON.stringify(data));
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Invalid action' })
+        body: JSON.stringify({ 
+          error: 'Invalid action',
+          received: action,
+          expected: 'test, sync, or create'
+        })
       };
   }
 }
