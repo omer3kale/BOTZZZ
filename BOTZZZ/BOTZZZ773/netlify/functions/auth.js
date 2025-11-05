@@ -8,6 +8,15 @@ const SALT_ROUNDS = 10;
 
 // Helper function to create JWT token
 function createToken(user) {
+  console.log('[DEBUG AUTH] Creating token:', {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    hasJwtSecret: !!JWT_SECRET,
+    jwtSecretLength: JWT_SECRET?.length,
+    jwtSecretPrefix: JWT_SECRET?.substring(0, 8) + '...'
+  });
+  
   return jwt.sign(
     { 
       userId: user.id, 

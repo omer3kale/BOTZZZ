@@ -39,6 +39,8 @@ exports.handler = async (event) => {
     hasAuthHeader: !!authHeader,
     headerValue: authHeader ? authHeader.substring(0, 20) + '...' : 'none',
     hasJwtSecret: !!JWT_SECRET,
+    jwtSecretLength: JWT_SECRET?.length,
+    jwtSecretPrefix: JWT_SECRET?.substring(0, 8) + '...',
     allHeaders: Object.keys(event.headers)
   });
   
@@ -50,6 +52,17 @@ exports.handler = async (event) => {
     userRole: user?.role,
     userEmail: user?.email
   });
+  
+  // DEBUG: Try to manually decode token without verification to see payload
+  if (!user && authHeader) {
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.decode(token);
+      console.log('[DEBUG] Token payload (unverified):', decoded);
+    } catch (e) {
+      console.log('[DEBUG] Failed to decode token:', e.message);
+    }
+  }
   if (!user) {
     return {
       statusCode: 401,
