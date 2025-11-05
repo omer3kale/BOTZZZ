@@ -155,118 +155,47 @@
     }
 
     // ==========================================
-    // SERVICES DATA
+    // SERVICES DATA - LOADED FROM DATABASE
     // ==========================================
-    const servicesData = {
-        instagram: [
-            { 
-                id: '4404', 
-                name: '😊 Instagram Followers | Global Users | NR | Instant Start | Very Fast | Cheapest', 
-                price: 1.0105,
-                min: 100,
-                max: 30000,
-                avgTime: '34 minutes'
-            },
-            { 
-                id: '2717', 
-                name: '😊 Instagram Followers | Flag Off | NR | 50K Per Day', 
-                price: 0.736,
-                min: 100,
-                max: 50000,
-                avgTime: '2 hours'
-            },
-            { 
-                id: '1199', 
-                name: '😊 Instagram Followers | Cancel Button ❌ | 30 Days Refill | Per Day 50K', 
-                price: 1.287,
-                min: 100,
-                max: 50000,
-                avgTime: '1 hour'
-            },
-            { 
-                id: '3001', 
-                name: '😊 Instagram Likes | Real | Instant | 5K Per Day', 
-                price: 0.45,
-                min: 50,
-                max: 5000,
-                avgTime: '15 minutes'
+    let servicesData = {};
+
+    // Load services from database
+    async function loadServicesFromDatabase() {
+        try {
+            const response = await fetch('/.netlify/functions/services');
+            const data = await response.json();
+            
+            if (data.success && data.services) {
+                // Categorize services
+                servicesData = {};
+                data.services.forEach(service => {
+                    const category = service.category.toLowerCase();
+                    if (!servicesData[category]) {
+                        servicesData[category] = [];
+                    }
+                    servicesData[category].push({
+                        id: service.id.toString(),
+                        name: service.name,
+                        price: parseFloat(service.price),
+                        min: service.min_quantity || 100,
+                        max: service.max_quantity || 10000,
+                        avgTime: service.avg_time || 'Not specified',
+                        description: service.description || ''
+                    });
+                });
+                
+                console.log('Services loaded successfully:', Object.keys(servicesData).length, 'categories');
+                return true;
+            } else {
+                console.error('Failed to load services:', data.error);
+                return false;
             }
-        ],
-        tiktok: [
-            { 
-                id: '3694', 
-                name: '🎵 TikTok Followers | Global Users | NR | Instant Start | 30K Per Day', 
-                price: 0.89,
-                min: 100,
-                max: 30000,
-                avgTime: '45 minutes'
-            },
-            { 
-                id: '3695', 
-                name: '🎵 TikTok Likes | Real | Fast | 10K Per Hour', 
-                price: 0.35,
-                min: 100,
-                max: 10000,
-                avgTime: '20 minutes'
-            }
-        ],
-        youtube: [
-            { 
-                id: '4403', 
-                name: '▶️ YouTube Subscribe | R30 | Instant Start | Per Day 20-50 | No Drop | %100 Working', 
-                price: 0.65,
-                min: 50,
-                max: 5000,
-                avgTime: '1 hour'
-            },
-            { 
-                id: '4448', 
-                name: '▶️ YouTube Views | Lifetime Refill | Start in 0-4 Hours | No Drop | Per Day 5K', 
-                price: 5.20,
-                min: 100,
-                max: 5000,
-                avgTime: '4 hours'
-            }
-        ],
-        twitter: [
-            { 
-                id: '3584', 
-                name: '🐦 Twitter Tweet Views | Global Users | Instant Starts | 500K per Hour', 
-                price: 0.093,
-                min: 1000,
-                max: 500000,
-                avgTime: '30 minutes'
-            },
-            { 
-                id: '3605', 
-                name: '🐦 Twitter Followers | Real | Instant | 10K Per Day', 
-                price: 1.50,
-                min: 100,
-                max: 10000,
-                avgTime: '1 hour'
-            }
-        ],
-        facebook: [
-            { 
-                id: '2001', 
-                name: '👍 Facebook Page Likes | Real | 5K Per Day', 
-                price: 0.85,
-                min: 100,
-                max: 5000,
-                avgTime: '2 hours'
-            }
-        ],
-        telegram: [
-            { 
-                id: '4449', 
-                name: '✈️ Telegram Channel - Group Members | Real | Fast Service | Instant Start | 100K Per Day', 
-                price: 0.806,
-                min: 100,
-                max: 100000,
-                avgTime: '1 hour'
-            }
-        ]
-    };
+        } catch (error) {
+            console.error('Error loading services:', error);
+            showToast('Failed to load services. Please refresh the page.', 'error');
+            return false;
+        }
+    }
 
     // ==========================================
     // ORDER FORM FUNCTIONALITY
@@ -634,5 +563,14 @@
 
     // Initialize
     updateUserDisplay();
+    
+    // Load services from database on page load
+    loadServicesFromDatabase().then(success => {
+        if (success) {
+            console.log('Dashboard ready with', Object.keys(servicesData).length, 'service categories');
+        } else {
+            console.warn('Dashboard loaded but services failed to load');
+        }
+    });
 
 })();
