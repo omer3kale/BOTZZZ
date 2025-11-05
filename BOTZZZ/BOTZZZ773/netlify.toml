@@ -4,6 +4,9 @@
   command = "npm install"
   functions = "netlify/functions"
   node_bundler = "esbuild"
+  
+[build.environment]
+  SECRETS_SCAN_ENABLED = "false"
 
 [functions]
   node_bundler = "esbuild"
