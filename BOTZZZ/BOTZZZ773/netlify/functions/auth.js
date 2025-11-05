@@ -477,6 +477,8 @@ async function handleGoogleSignIn(data, headers) {
   try {
     const { credential, email, name, picture } = data;
 
+    console.log('[DEBUG] Google sign-in attempt:', { email, name, hasCredential: !!credential });
+
     if (!credential || !email) {
       return {
         statusCode: 400,
@@ -485,23 +487,22 @@ async function handleGoogleSignIn(data, headers) {
       };
     }
 
-    // Check if user exists
+    // Check if user exists by email only (no auth_provider column)
     const { data: existingUser, error: findError } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('email', email)
-      .eq('auth_provider', 'google')
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid error when not found
 
     let user;
 
     if (existingUser) {
+      console.log('[DEBUG] Existing user found:', existingUser.id);
       // User exists - update last login
       const { data: updatedUser, error: updateError } = await supabaseAdmin
         .from('users')
         .update({ 
-          last_login: new Date().toISOString(),
-          profile_picture: picture // Update profile picture if changed
+          last_login: new Date().toISOString()
         })
         .eq('id', existingUser.id)
         .select()
@@ -518,38 +519,22 @@ async function handleGoogleSignIn(data, headers) {
 
       user = updatedUser;
     } else {
-      // Check if email exists with different auth provider
-      const { data: emailExists } = await supabaseAdmin
-        .from('users')
-        .select('email, auth_provider')
-        .eq('email', email)
-        .single();
-
-      if (emailExists) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ 
-            error: `This email is already registered with ${emailExists.auth_provider} login. Please use ${emailExists.auth_provider} to sign in.`
-          })
-        };
-      }
-
+      console.log('[DEBUG] Creating new Google user');
       // Create new user from Google sign-in
+      // Generate unique username from email
+      const baseUsername = email.split('@')[0];
+      const uniqueUsername = baseUsername + Math.floor(Math.random() * 10000);
+      
       const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
         .insert({
           email: email,
-          full_name: name,
-          username: email.split('@')[0] + Math.floor(Math.random() * 1000),
-          password_hash: null, // No password for Google users
-          auth_provider: 'google',
-          google_id: credential,
-          profile_picture: picture,
+          full_name: name || email.split('@')[0],
+          username: uniqueUsername,
+          password_hash: 'GOOGLE_OAUTH', // Placeholder for Google OAuth users (can't be null)
           balance: 0,
-          role: 'customer',
+          role: 'user', // Use 'user' not 'customer'
           status: 'active',
-          created_at: new Date().toISOString(),
           last_login: new Date().toISOString()
         })
         .select()
@@ -557,13 +542,18 @@ async function handleGoogleSignIn(data, headers) {
 
       if (createError) {
         console.error('Create Google user error:', createError);
+        console.error('Error details:', JSON.stringify(createError, null, 2));
         return {
           statusCode: 500,
           headers,
-          body: JSON.stringify({ error: 'Failed to create user account' })
+          body: JSON.stringify({ 
+            error: 'Failed to create user account',
+            details: createError.message || createError.hint
+          })
         };
       }
 
+      console.log('[DEBUG] New user created:', newUser.id);
       user = newUser;
     }
 
@@ -582,18 +572,20 @@ async function handleGoogleSignIn(data, headers) {
           full_name: user.full_name,
           username: user.username,
           role: user.role,
-          balance: user.balance,
-          profile_picture: user.profile_picture,
-          auth_provider: user.auth_provider
+          balance: user.balance
         }
       })
     };
   } catch (error) {
     console.error('Google sign-in error:', error);
+    console.error('Error stack:', error.stack);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ 
+        error: 'Internal server error',
+        message: error.message
+      })
     };
   }
 }
