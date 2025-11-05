@@ -44,6 +44,15 @@ exports.handler = async (event) => {
     allHeaders: Object.keys(event.headers)
   });
   
+  // Extract token
+  const tokenString = authHeader ? authHeader.substring(7) : null;
+  console.log('[DEBUG] Token extraction:', {
+    hasToken: !!tokenString,
+    tokenLength: tokenString?.length,
+    tokenStart: tokenString?.substring(0, 20) + '...',
+    tokenEnd: '...' + tokenString?.substring(tokenString.length - 20)
+  });
+  
   const user = getUserFromToken(authHeader);
   
   // DEBUG: Log auth result
@@ -54,11 +63,21 @@ exports.handler = async (event) => {
   });
   
   // DEBUG: Try to manually decode token without verification to see payload
-  if (!user && authHeader) {
+  if (!user && tokenString) {
     try {
-      const token = authHeader.substring(7);
-      const decoded = jwt.decode(token);
+      const decoded = jwt.decode(tokenString);
       console.log('[DEBUG] Token payload (unverified):', decoded);
+      
+      // Try verification with error details
+      try {
+        const verified = jwt.verify(tokenString, JWT_SECRET);
+        console.log('[DEBUG] Verification succeeded:', verified);
+      } catch (verifyError) {
+        console.log('[DEBUG] Verification failed:', {
+          name: verifyError.name,
+          message: verifyError.message
+        });
+      }
     } catch (e) {
       console.log('[DEBUG] Failed to decode token:', e.message);
     }
