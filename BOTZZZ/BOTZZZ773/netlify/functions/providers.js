@@ -283,6 +283,8 @@ async function createProvider(data, headers) {
   try {
     const { name, apiUrl, apiKey, markup, description, status } = data;
 
+    console.log('[DEBUG] Create provider request:', { name, apiUrl, apiKey: apiKey?.substring(0, 10) + '...', markup, status });
+
     if (!name || !apiKey) {
       return {
         statusCode: 400,
@@ -293,29 +295,39 @@ async function createProvider(data, headers) {
 
     // Use a default API URL if not provided (will be updated when testing/syncing)
     const providerApiUrl = apiUrl || 'https://provider-api.example.com';
-    const providerMarkup = markup || 15; // Default 15% markup
+    const providerMarkup = markup !== undefined ? markup : 15; // Default 15% markup if not provided
+
+    const insertData = {
+      name,
+      api_url: providerApiUrl,
+      api_key: apiKey,
+      markup: providerMarkup,
+      description: description || '',
+      status: status || 'active'
+    };
+
+    console.log('[DEBUG] Inserting provider:', { ...insertData, api_key: insertData.api_key?.substring(0, 10) + '...' });
 
     const { data: provider, error } = await supabaseAdmin
       .from('providers')
-      .insert({
-        name,
-        api_url: providerApiUrl,
-        api_key: apiKey,
-        markup: providerMarkup,
-        description: description || '',
-        status: status || 'active'
-      })
+      .insert(insertData)
       .select()
       .single();
 
     if (error) {
       console.error('Create provider error:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: 'Failed to create provider' })
+        body: JSON.stringify({ 
+          error: 'Failed to create provider',
+          details: error.message || error.hint || 'Unknown database error'
+        })
       };
     }
+
+    console.log('[DEBUG] Provider created successfully:', provider.id);
 
     return {
       statusCode: 201,
@@ -326,11 +338,15 @@ async function createProvider(data, headers) {
       })
     };
   } catch (error) {
-    console.error('Create provider error:', error);
+    console.error('Create provider exception:', error);
+    console.error('Exception stack:', error.stack);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' })
+      body: JSON.stringify({ 
+        error: 'Internal server error',
+        message: error.message
+      })
     };
   }
 }
