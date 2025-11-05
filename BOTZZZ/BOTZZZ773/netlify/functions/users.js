@@ -31,8 +31,9 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  // Verify authentication
-  const user = getUserFromToken(event.headers.authorization);
+  // Verify authentication - normalize header casing
+  const authHeader = event.headers.authorization || event.headers.Authorization;
+  const user = getUserFromToken(authHeader);
   if (!user) {
     return {
       statusCode: 401,

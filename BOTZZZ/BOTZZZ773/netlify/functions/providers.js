@@ -29,7 +29,9 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  const user = getUserFromToken(event.headers.authorization);
+  // Normalize authorization header casing
+  const authHeader = event.headers.authorization || event.headers.Authorization;
+  const user = getUserFromToken(authHeader);
   if (!user || user.role !== 'admin') {
     return {
       statusCode: 403,

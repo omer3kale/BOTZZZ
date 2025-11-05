@@ -1,12 +1,26 @@
 // Payments API - Process Payments, Add Balance
 const { supabase, supabaseAdmin } = require('./utils/supabase');
 const jwt = require('jsonwebtoken');
-const stripeLib = require('stripe');
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-const stripe = STRIPE_SECRET_KEY ? stripeLib(STRIPE_SECRET_KEY) : null;
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+
+// Lazy-load Stripe only when needed and configured
+function getStripeClient() {
+  const key = (STRIPE_SECRET_KEY || '').trim();
+  if (!key || key === 'undefined' || key === 'null' || key === '') {
+    return null;
+  }
+
+  try {
+    const stripe = require('stripe');
+    return stripe(key);
+  } catch (error) {
+    console.error('Failed to initialize Stripe:', error.message);
+    return null;
+  }
+}
 
 function getUserFromToken(authHeader) {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -32,7 +46,9 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  const user = getUserFromToken(event.headers.authorization);
+  // Normalize authorization header casing
+  const authHeader = event.headers.authorization || event.headers.Authorization;
+  const user = getUserFromToken(authHeader);
   if (!user) {
     return {
       statusCode: 401,
@@ -129,6 +145,7 @@ async function handleCreateCheckout(user, data, headers) {
     }
 
     if (method === 'stripe') {
+      const stripe = getStripeClient();
       if (!stripe) {
         return {
           statusCode: 500,
@@ -209,6 +226,7 @@ async function handleCreateCheckout(user, data, headers) {
 }
 
 async function handleWebhook(event, headers) {
+  const stripe = getStripeClient();
   if (!stripe || !STRIPE_WEBHOOK_SECRET) {
     return {
       statusCode: 400,
