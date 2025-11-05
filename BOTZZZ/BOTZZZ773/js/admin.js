@@ -357,3 +357,83 @@ function getColumnIndex(column) {
     }
     return 0;
 }
+
+// ========================================
+// MODAL SYSTEM - SHARED ACROSS ALL PAGES
+// ========================================
+
+function createModal(title, content, actions = '') {
+    const modalHTML = `
+        <div class="modal-overlay" id="activeModal" onclick="if(event.target === this) closeModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${content}
+                </div>
+                ${actions ? `<div class="modal-footer">${actions}</div>` : ''}
+            </div>
+        </div>
+    `;
+    
+    const existing = document.getElementById('activeModal');
+    if (existing) existing.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    setTimeout(() => document.getElementById('activeModal').classList.add('show'), 10);
+}
+
+function closeModal() {
+    const modal = document.getElementById('activeModal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}
+
+// ========================================
+// BUTTON LOADING STATE HELPER
+// ========================================
+
+function setButtonLoading(button, loading = true, originalText = 'Submit') {
+    if (loading) {
+        button.dataset.originalText = button.textContent;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    } else {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText || originalText;
+    }
+}
+
+// ========================================
+// AUTHENTICATED API FETCH HELPER
+// ========================================
+
+async function adminFetch(url, options = {}) {
+    const token = localStorage.getItem('token');
+    
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            ...options.headers
+        }
+    };
+    
+    const response = await fetch(url, { ...options, headers: defaultOptions.headers });
+    
+    // Handle auth errors
+    if (response.status === 401 || response.status === 403) {
+        showNotification('Session expired. Please login again.', 'error');
+        setTimeout(() => {
+            localStorage.removeItem('token');
+            window.location.href = '/signin.html';
+        }, 2000);
+        throw new Error('Unauthorized');
+    }
+    
+    return response;
+}

@@ -1,36 +1,5 @@
 // Admin Settings Management with Full Panel Implementation
-
-// Modal Helper Functions
-function createModal(title, content, actions = '') {
-    const modalHTML = `
-        <div class="modal-overlay" id="activeModal" onclick="if(event.target === this) closeModal()">
-            <div class="modal-content" onclick="event.stopPropagation()">
-                <div class="modal-header">
-                    <h3>${title}</h3>
-                    <button class="modal-close" onclick="closeModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    ${content}
-                </div>
-                ${actions ? `<div class="modal-footer">${actions}</div>` : ''}
-            </div>
-        </div>
-    `;
-    
-    const existing = document.getElementById('activeModal');
-    if (existing) existing.remove();
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    setTimeout(() => document.getElementById('activeModal').classList.add('show'), 10);
-}
-
-function closeModal() {
-    const modal = document.getElementById('activeModal');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => modal.remove(), 300);
-    }
-}
+// Note: createModal() and closeModal() are now in admin.js (shared across all pages)
 
 // Show settings section
 function showSettingsSection(section) {
@@ -1148,10 +1117,17 @@ function submitAddProvider(event) {
 
 // Load providers from backend
 async function loadProviders() {
+    const grid = document.getElementById('providersGrid');
+    if (!grid) return;
+    
+    // Show loading state
+    grid.innerHTML = '<div class="loading" style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #888;"></i><p style="margin-top: 1rem; color: #888;">Loading providers...</p></div>';
+    
     try {
         const response = await fetch('/.netlify/functions/providers', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
             }
         });
         
@@ -1161,21 +1137,37 @@ async function loadProviders() {
             displayProviders(data.providers);
         } else {
             console.error('Failed to load providers:', data.error);
+            grid.innerHTML = `
+                <div class="error-state" style="text-align: center; padding: 40px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                    <p>Failed to load providers</p>
+                    <p style="color: #888;">${data.error || 'Unknown error'}</p>
+                    <button class="btn-primary" onclick="loadProviders()" style="margin-top: 1rem;">Retry</button>
+                </div>
+            `;
         }
     } catch (error) {
         console.error('Error loading providers:', error);
+        grid.innerHTML = `
+            <div class="error-state" style="text-align: center; padding: 40px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                <p>Failed to load providers</p>
+                <p style="color: #888;">${error.message}</p>
+                <button class="btn-primary" onclick="loadProviders()" style="margin-top: 1rem;">Retry</button>
+            </div>
+        `;
     }
 }
 
 // Display providers in the grid
 function displayProviders(providers) {
-    const providersGrid = document.querySelector('.providers-grid');
+    const providersGrid = document.getElementById('providersGrid');
     
     if (!providersGrid) return;
     
     if (providers.length === 0) {
         providersGrid.innerHTML = `
-            <div class="empty-state">
+            <div class="empty-state" style="text-align: center; padding: 40px;">
                 <i class="fas fa-plug" style="font-size: 3rem; color: #888; margin-bottom: 1rem;"></i>
                 <p>No providers configured yet.</p>
                 <p style="color: #888;">Click "Add Provider" to get started.</p>
@@ -1189,13 +1181,13 @@ function displayProviders(providers) {
             <div class="provider-header">
                 <div class="provider-info">
                     <h3>${escapeHtml(provider.name)}</h3>
-                    <span class="status-badge status-${provider.status.toLowerCase()}">${provider.status}</span>
+                    <span class="status-badge ${provider.status === 'active' ? 'completed' : 'pending'}">${provider.status}</span>
                 </div>
                 <div class="provider-actions">
-                    <button class="btn-icon" onclick="editProvider(${provider.id})" title="Edit">
+                    <button class="btn-icon" onclick="editProvider('${provider.id}')" title="Edit">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn-icon" onclick="deleteProvider(${provider.id})" title="Delete">
+                    <button class="btn-icon" onclick="deleteProvider('${provider.id}')" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1207,12 +1199,20 @@ function displayProviders(providers) {
                 </div>
                 <div class="provider-detail-item">
                     <span class="detail-label">API Key:</span>
-                    <span class="detail-value">••••••${provider.api_key.slice(-4)}</span>
+                    <span class="detail-value">••••••${provider.api_key ? provider.api_key.slice(-4) : '••••'}</span>
                 </div>
                 <div class="provider-detail-item">
                     <span class="detail-label">Markup:</span>
                     <span class="detail-value">${provider.markup}%</span>
                 </div>
+            </div>
+            <div class="provider-footer">
+                <button class="btn-secondary btn-sm" onclick="syncProvider('${provider.id}')">
+                    <i class="fas fa-sync"></i> Sync Services
+                </button>
+                <button class="btn-secondary btn-sm" onclick="testProvider('${provider.id}')">
+                    <i class="fas fa-check-circle"></i> Test Connection
+                </button>
             </div>
         </div>
     `).join('');
