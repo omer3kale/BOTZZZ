@@ -25,26 +25,26 @@ async function loadReportData() {
         if (data.success) {
             reportData = data;
         } else {
-            // Use fallback sample data if backend returns no data
+            // Use empty data if backend returns no data
             reportData = {
-                payments: [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400],
-                orders: [450, 380, 320, 280, 240, 200, 160, 120, 80, 40],
-                tickets: [25, 32, 28, 35, 30, 22, 18, 15, 12, 10],
-                profits: [3200, 2800, 2400, 2100, 1800, 1500, 1200, 900, 600, 300],
-                services: [156, 156, 155, 154, 153, 152, 151, 150, 149, 148],
-                labels: ['Nov 1', 'Nov 2', 'Nov 3', 'Nov 4', 'Nov 5', 'Nov 6', 'Nov 7', 'Nov 8', 'Nov 9', 'Nov 10']
+                payments: [],
+                orders: [],
+                tickets: [],
+                profits: [],
+                services: [],
+                labels: []
             };
         }
     } catch (error) {
         console.error('Failed to load report data:', error);
-        // Use fallback sample data on error
+        // Use empty data on error
         reportData = {
-            payments: [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400],
-            orders: [450, 380, 320, 280, 240, 200, 160, 120, 80, 40],
-            tickets: [25, 32, 28, 35, 30, 22, 18, 15, 12, 10],
-            profits: [3200, 2800, 2400, 2100, 1800, 1500, 1200, 900, 600, 300],
-            services: [156, 156, 155, 154, 153, 152, 151, 150, 149, 148],
-            labels: ['Nov 1', 'Nov 2', 'Nov 3', 'Nov 4', 'Nov 5', 'Nov 6', 'Nov 7', 'Nov 8', 'Nov 9', 'Nov 10']
+            payments: [],
+            orders: [],
+            tickets: [],
+            profits: [],
+            services: [],
+            labels: []
         };
     }
 }
@@ -55,10 +55,10 @@ function initializeChart() {
     if (!ctx || !reportData) return;
 
     const data = {
-        labels: reportData.labels || ['Nov 1', 'Nov 2', 'Nov 3', 'Nov 4', 'Nov 5', 'Nov 6', 'Nov 7', 'Nov 8', 'Nov 9', 'Nov 10'],
+        labels: reportData.labels || [],
         datasets: [{
             label: 'Revenue',
-            data: reportData.payments || [11000, 8500, 6200, 4800, 3500, 2800, 1900, 1200, 800, 400],
+            data: reportData.payments || [],
             borderColor: '#FF1494',
             backgroundColor: 'rgba(255, 20, 148, 0.1)',
             tension: 0.4,

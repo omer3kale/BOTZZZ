@@ -8,87 +8,8 @@ const categorySubcategories = {
     other: []
 };
 
-// Sample tickets data (in production, this would come from backend)
-let tickets = [
-    {
-        id: 'TKT-12345',
-        subject: 'Need refill for order #54321',
-        category: 'Orders',
-        subcategory: 'Refill',
-        status: 'open',
-        orderId: '54321',
-        createdAt: '2024-11-01 14:30',
-        updatedAt: '2024-11-01 14:30',
-        messages: [
-            {
-                id: 1,
-                author: 'You',
-                role: 'user',
-                content: 'My order #54321 for 1000 Instagram followers has dropped to 800. I need a refill please.',
-                date: '2024-11-01 14:30'
-            }
-        ]
-    },
-    {
-        id: 'TKT-12344',
-        subject: 'Payment not reflected in balance',
-        category: 'Payment',
-        subcategory: null,
-        status: 'pending',
-        orderId: null,
-        createdAt: '2024-10-31 09:15',
-        updatedAt: '2024-10-31 16:45',
-        messages: [
-            {
-                id: 1,
-                author: 'You',
-                role: 'user',
-                content: 'I made a payment of $50 via Payeer but it\'s not showing in my balance. Transaction ID: PYR123456789',
-                date: '2024-10-31 09:15'
-            },
-            {
-                id: 2,
-                author: 'Admin',
-                role: 'admin',
-                content: 'Thank you for contacting us. We are currently investigating your payment. We will update you within 24 hours.',
-                date: '2024-10-31 16:45'
-            }
-        ]
-    },
-    {
-        id: 'TKT-12343',
-        subject: 'How to use API?',
-        category: 'Other',
-        subcategory: null,
-        status: 'closed',
-        orderId: null,
-        createdAt: '2024-10-30 11:20',
-        updatedAt: '2024-10-30 13:00',
-        messages: [
-            {
-                id: 1,
-                author: 'You',
-                role: 'user',
-                content: 'I want to integrate your API into my website. Can you provide documentation?',
-                date: '2024-10-30 11:20'
-            },
-            {
-                id: 2,
-                author: 'Admin',
-                role: 'admin',
-                content: 'Sure! Please visit our API documentation page at https://botzzz773.com/api. You can also generate your API key from the API dashboard.',
-                date: '2024-10-30 12:30'
-            },
-            {
-                id: 3,
-                author: 'You',
-                role: 'user',
-                content: 'Perfect! Thank you!',
-                date: '2024-10-30 13:00'
-            }
-        ]
-    }
-];
+// Tickets array - loaded from backend
+let tickets = [];
 
 // Load tickets from backend
 async function loadTickets() {

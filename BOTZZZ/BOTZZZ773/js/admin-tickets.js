@@ -178,81 +178,95 @@ function submitAddTicket(event) {
 }
 
 // View ticket
-function viewTicket(ticketId) {
-    const content = `
-        <div class="ticket-details">
-            <div class="ticket-header" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <h3 style="margin: 0 0 8px;">Order #12345 - Delivery Issue</h3>
-                        <div style="color: #888; font-size: 14px;">
-                            Ticket #${ticketId} • Created 2 days ago
+async function viewTicket(ticketId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/.netlify/functions/tickets?id=${ticketId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json();
+        if (!data.success || !data.ticket) {
+            alert('Failed to load ticket details');
+            return;
+        }
+        
+        const ticket = data.ticket;
+        
+        const content = `
+            <div class="ticket-details">
+                <div class="ticket-header" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h3 style="margin: 0 0 8px;">${escapeHtml(ticket.subject)}</h3>
+                            <div style="color: #888; font-size: 14px;">
+                                Ticket #${ticket.id} • Created ${new Date(ticket.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge badge-${ticket.status === 'open' ? 'success' : ticket.status === 'closed' ? 'secondary' : 'warning'}">${ticket.status}</span>
+                            <div style="color: #888; font-size: 12px; margin-top: 4px;">Priority: ${ticket.priority || 'Normal'}</div>
                         </div>
                     </div>
-                    <div style="text-align: right;">
-                        <span class="badge badge-warning">Open</span>
-                        <div style="color: #888; font-size: 12px; margin-top: 4px;">Priority: High</div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 13px;">
+                            <div>
+                                <div style="color: #888;">User</div>
+                                <div>${escapeHtml(ticket.user_email || ticket.username || 'Unknown')}</div>
+                            </div>
+                            <div>
+                                <div style="color: #888;">Category</div>
+                                <div>${escapeHtml(ticket.category)}</div>
+                            </div>
+                            <div>
+                                <div style="color: #888;">Order ID</div>
+                                <div>${ticket.order_id || 'N/A'}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 13px;">
-                        <div>
-                            <div style="color: #888;">User</div>
-                            <div>john_doe</div>
+
+                <div class="ticket-conversation" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+                    ${ticket.messages && ticket.messages.length > 0 ? ticket.messages.map(msg => `
+                        <div class="message ${msg.is_admin ? 'admin-message' : 'user-message'}" style="background: rgba(${msg.is_admin ? '255, 20, 147' : '16, 185, 129'}, 0.1); border-left: 3px solid ${msg.is_admin ? '#FF1494' : '#10b981'}; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                            <div style="font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;">
+                                <span>${escapeHtml(msg.sender_name || (msg.is_admin ? 'Admin' : 'User'))}</span>
+                                <span style="font-size: 12px; color: #888;">${new Date(msg.created_at).toLocaleString()}</span>
+                            </div>
+                            <p style="margin: 0;">${escapeHtml(msg.message)}</p>
                         </div>
-                        <div>
-                            <div style="color: #888;">Category</div>
-                            <div>Orders</div>
-                        </div>
-                        <div>
-                            <div style="color: #888;">Assigned To</div>
-                            <div>Support Agent 1</div>
-                        </div>
-                    </div>
+                    `).join('') : '<p style="color: #888; text-align: center;">No messages yet</p>'}
                 </div>
+
+                <form id="replyTicketForm" onsubmit="submitReplyTicket(event, '${ticketId}')" class="admin-form">
+                    <div class="form-group">
+                        <label>Reply Message</label>
+                        <textarea name="replyMessage" rows="4" placeholder="Type your reply..." required></textarea>
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="closeTicket">
+                            <span>Close ticket after sending</span>
+                        </label>
+                    </div>
+                </form>
             </div>
-
-            <div class="ticket-conversation" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
-                <div class="message user-message" style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                    <div style="font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;">
-                        <span>john_doe</span>
-                        <span style="font-size: 12px; color: #888;">2 days ago</span>
-                    </div>
-                    <p style="margin: 0;">I ordered 1000 Instagram followers but only received 500. Can you please check this?</p>
-                </div>
-
-                <div class="message admin-message" style="background: rgba(255, 20, 147, 0.1); border-left: 3px solid #FF1494; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
-                    <div style="font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;">
-                        <span>Support Agent 1</span>
-                        <span style="font-size: 12px; color: #888;">1 day ago</span>
-                    </div>
-                    <p style="margin: 0;">Thank you for contacting us. I've checked your order and will process a refill immediately.</p>
-                </div>
-            </div>
-
-            <form id="replyTicketForm" onsubmit="submitReplyTicket(event, ${ticketId})" class="admin-form">
-                <div class="form-group">
-                    <label>Reply Message</label>
-                    <textarea name="replyMessage" rows="4" placeholder="Type your reply..." required></textarea>
-                </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" name="closeTicket">
-                        <span>Close ticket after sending</span>
-                    </label>
-                </div>
-            </form>
-        </div>
-    `;
-    
-    const actions = `
-        <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
-        <button type="submit" form="replyTicketForm" class="btn-primary">
-            <i class="fas fa-reply"></i> Send Reply
-        </button>
-    `;
-    
-    createModal(`Ticket #${ticketId}`, content, actions);
+        `;
+        
+        const actions = `
+            <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
+            <button type="submit" form="replyTicketForm" class="btn-primary">
+                <i class="fas fa-reply"></i> Send Reply
+            </button>
+        `;
+        
+        createModal(`Ticket #${ticketId}`, content, actions);
+    } catch (error) {
+        console.error('Error loading ticket:', error);
+        alert('Failed to load ticket details');
+    }
 }
 
 async function submitReplyTicket(event, ticketId) {
