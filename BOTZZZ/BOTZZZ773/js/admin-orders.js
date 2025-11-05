@@ -58,56 +58,32 @@ function viewOrder(orderId) {
     const content = `
         <div class="user-details">
             <div class="user-detail-section">
-                <h4><i class="fas fa-shopping-cart"></i> Order Information</h4>
+                <h4><i class="fas fa-info-circle"></i> Order Details</h4>
                 <div class="detail-row">
                     <span class="detail-label">Order ID:</span>
                     <span class="detail-value">#${orderId}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">User:</span>
-                    <span class="detail-value">codedsmm</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Service:</span>
-                    <span class="detail-value">Instagram Followers</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Link:</span>
-                    <span class="detail-value" style="word-break: break-all; font-size: 12px;">https://www.instagram.com/username/</span>
+                    <span class="detail-label" style="color: #888;">Loading order details...</span>
                 </div>
             </div>
-            <div class="user-detail-section">
-                <h4><i class="fas fa-chart-bar"></i> Progress</h4>
-                <div class="detail-row">
-                    <span class="detail-label">Quantity:</span>
-                    <span class="detail-value">1,000</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Remains:</span>
-                    <span class="detail-value">350</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Charge:</span>
-                    <span class="detail-value">$12.50</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Status:</span>
-                    <span class="status-badge in-progress">In Progress</span>
-                </div>
+            <div class="user-detail-section" style="text-align: center; padding: 40px 20px; color: #888;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #FF1494; margin-bottom: 16px;"></i>
+                <p>Fetching order information from database...</p>
             </div>
-            <div class="user-detail-section">
+            <div class="user-detail-section" style="display: none;">
                 <h4><i class="fas fa-clock"></i> Timeline</h4>
                 <div class="detail-row">
                     <span class="detail-label">Created:</span>
-                    <span class="detail-value">2025-11-02 00:40:48</span>
+                    <span class="detail-value">-</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Started:</span>
-                    <span class="detail-value">2025-11-02 00:42:15</span>
+                    <span class="detail-value">-</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Mode:</span>
-                    <span class="detail-value">Auto</span>
+                    <span class="detail-value">-</span>
                 </div>
             </div>
         </div>

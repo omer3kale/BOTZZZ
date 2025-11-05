@@ -1409,15 +1409,15 @@ function testProvider(providerId) {
                         </div>
                         <div>
                             <div style="color: #888; font-size: 12px;">API Version</div>
-                            <div style="font-weight: 600;">v2.0</div>
+                            <div style="font-weight: 600;">-</div>
                         </div>
                         <div>
                             <div style="color: #888; font-size: 12px;">Available Services</div>
-                            <div style="font-weight: 600;">87</div>
+                            <div style="font-weight: 600;">-</div>
                         </div>
                         <div>
                             <div style="color: #888; font-size: 12px;">Balance</div>
-                            <div style="font-weight: 600; color: #10b981;">$1,245.50</div>
+                            <div style="font-weight: 600; color: #10b981;">-</div>
                         </div>
                     </div>
                 </div>

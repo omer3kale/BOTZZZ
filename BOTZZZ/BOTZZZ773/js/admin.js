@@ -154,8 +154,8 @@ function initDashboardChart() {
     
     const ctx = canvas.getContext('2d');
     
-    // Generate realistic revenue data
-    const revenueData = sampleOrders.map(order => order.charge * Math.random() * 100 + 500);
+    // Generate placeholder revenue data for chart
+    const revenueData = [500, 650, 750, 820, 900, 1100, 1250];
     
     const data = {
         labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],

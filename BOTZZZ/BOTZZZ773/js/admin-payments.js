@@ -227,11 +227,11 @@ function exportData() {
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                     <div>
                         <div style="color: #888; font-size: 12px;">Total Records</div>
-                        <div style="font-size: 20px; font-weight: 600;">1,247</div>
+                        <div id="exportRecordCount" style="font-size: 20px; font-weight: 600;">-</div>
                     </div>
                     <div>
                         <div style="color: #888; font-size: 12px;">Total Amount</div>
-                        <div style="font-size: 20px; font-weight: 600; color: #10b981;">$45,892.50</div>
+                        <div id="exportTotalAmount" style="font-size: 20px; font-weight: 600; color: #10b981;">-</div>
                     </div>
                 </div>
             </div>
