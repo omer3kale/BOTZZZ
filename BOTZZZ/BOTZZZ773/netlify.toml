@@ -3,6 +3,11 @@
   publish = "."
   command = "npm install"
   functions = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@supabase/supabase-js", "stripe"]
 
 [dev]
   command = "npm run dev"
