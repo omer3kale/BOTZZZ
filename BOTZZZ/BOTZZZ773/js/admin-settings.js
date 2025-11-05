@@ -1092,9 +1092,10 @@ function submitAddProvider(event) {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
+            action: 'create',
             name: providerData.providerName,
-            api_url: providerData.apiUrl,
-            api_key: providerData.apiKey,
+            apiUrl: providerData.apiUrl,
+            apiKey: providerData.apiKey,
             markup: parseFloat(providerData.markup) || 15,
             status: providerData.status || 'Active'
         })
