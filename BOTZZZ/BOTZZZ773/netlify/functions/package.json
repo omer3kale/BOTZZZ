@@ -1,0 +1,13 @@
+{
+  "name": "botzzz773-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions for BOTZZZ773",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.78.0",
+    "axios": "^1.13.1",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "stripe": "^19.2.0"
+  }
+}
