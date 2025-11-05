@@ -165,11 +165,6 @@
                              data-logo_alignment="left"
                              data-width="100%">
                         </div>
-                        
-                        <!-- Temporary message while Google OAuth is being set up -->
-                        <div style="margin-top: 10px; padding: 10px; background: rgba(255, 20, 148, 0.1); border-radius: 8px; font-size: 0.85rem; color: var(--text-gray);">
-                            <strong>Note:</strong> Google Sign-Up requires OAuth configuration. Please use email/password registration.
-                        </div>
                     </div>
 
                     <div class="auth-footer">
@@ -290,16 +285,21 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Backend response:', data);
                 if (data.success) {
-                    // Store token
-                    localStorage.setItem('authToken', data.token);
+                    // Store token with consistent key name
+                    localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
                     
                     // Show success message
                     console.log('Google Sign-Up successful!');
                     
-                    // Redirect to dashboard
-                    window.location.href = '/dashboard.html';
+                    // Role-based redirection
+                    if (data.user.role === 'admin') {
+                        window.location.href = '/admin/index.html';
+                    } else {
+                        window.location.href = '/dashboard.html';
+                    }
                 } else {
                     alert(data.error || 'Google Sign-Up failed. Please try again.');
                 }
