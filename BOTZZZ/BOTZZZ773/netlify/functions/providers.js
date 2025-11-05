@@ -102,7 +102,16 @@ async function handleGetProviders(headers) {
 
 async function handleAction(data, headers) {
   const { action, ...params } = data;
-  const normalizedAction = typeof action === 'string' ? action.trim().toLowerCase() : '';
+  let normalizedAction = typeof action === 'string' ? action.trim().toLowerCase() : '';
+
+  // When no explicit action is provided but provider fields exist, default to create.
+  if (!normalizedAction) {
+    if (params && (params.name || params.apiUrl || params.api_key || params.apiKey)) {
+      normalizedAction = 'create';
+    } else if (params && params.providerId) {
+      normalizedAction = 'sync';
+    }
+  }
 
   console.log('[DEBUG] handleAction called with:', { action, normalizedAction, params: Object.keys(params) });
 
