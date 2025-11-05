@@ -88,7 +88,7 @@ async function handleGetProviders(headers) {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ providers })
+      body: JSON.stringify({ success: true, providers })
     };
   } catch (error) {
     console.error('Get providers error:', error);
@@ -121,6 +121,7 @@ async function handleAction(data, headers) {
     case 'sync':
       return await syncProvider(params, headers);
     case 'create':
+    case 'add':
       return await createProvider(params, headers);
     default:
       console.error('[ERROR] Invalid action received:', action, 'Normalized:', normalizedAction, 'Full data:', JSON.stringify(data));

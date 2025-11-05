@@ -1102,6 +1102,7 @@ function submitAddProvider(event) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Add provider response:', data);
         if (data.success) {
             showNotification(`Provider "${providerData.providerName}" added successfully!`, 'success');
             closeModal();
