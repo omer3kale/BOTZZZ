@@ -49,13 +49,24 @@ async function apiCall(endpoint, options = {}) {
     const { method, headers, body, ...rest } = options;
     const customHeaders = headers || {};
     const authHeader = customHeaders.Authorization || customHeaders.authorization;
+    
+    // Remove auth headers from customHeaders to avoid duplication
+    const {Authorization, authorization, ...otherHeaders} = customHeaders;
+    
+    const finalHeaders = {
+        'Content-Type': 'application/json',
+        ...otherHeaders,
+        ...(authHeader ? { 'Authorization': authHeader } : {})  // Only send Authorization (capital A)
+    };
+    
+    console.log(`${colors.dim}Headers being sent:${colors.reset}`, Object.keys(finalHeaders));
+    if (authHeader) {
+        console.log(`${colors.dim}Auth header length: ${authHeader.length}${colors.reset}`);
+    }
+    
     const response = await fetch(url, {
         method: method || 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            ...customHeaders,
-            ...(authHeader ? { Authorization: authHeader, authorization: authHeader } : {})
-        },
+        headers: finalHeaders,
         body,
         ...rest
     });
@@ -122,10 +133,11 @@ async function runTests() {
         assert(data.token, 'Login should return token');
         assert(data.user.role === 'admin', 'User should have admin role');
 
-        adminToken = data.token;
+        adminToken = data.token.trim(); // Trim any whitespace
         adminUser = data.user;
         testUserId = adminUser.id; // use admin account for testing
         console.log(`${colors.green}✓ Admin token obtained${colors.reset}`);
+        console.log(`${colors.dim}Token length: ${adminToken.length}, starts: ${adminToken.substring(0, 20)}...${colors.reset}`);
     });
 
     if (!adminToken) {
